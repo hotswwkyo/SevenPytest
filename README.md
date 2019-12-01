@@ -6,7 +6,8 @@
 * 页面元素类（Elements）需要继承自根页面元素类（BasePage.Elements），元素方法需要接受一个参数，使用装饰器（PageElementLocators）从元素定  位数据excel文件里读出数据会作为字典传给参数。装饰器（PageElementLocators）有两个参数file_name、file_dir_path。file_name元素定位器文件名，未指定则以页面类名作为文件名。file_dir_path元素定位器文件所在的目录路径，未指定则以settings.py配置文件的PAGE_ELEMENTS_LOCATORS_ROOT_DIR作为默认查找目录。元素定位数据在excel中格式定义如下：
 	>* 元素方法定位器区域的第一行，第一列是区域分隔符（使用 页面元素定位器 进行分隔），第二列是元素方法名称，第三列是元素名称
 	>* 元素方法定位器区域的第二行是数据标题
-	>* 元素方法定位器区域的第三行是数据
+	>* 元素方法定位器区域的第三行是数据<br>
+	> ![image locators](https://github.com/hotswwkyo/SevenPytest/raw/master/img/page_element_locators.png"元素定位器")
 * 页面动作类（Actions）需要继承自根页面元素类（BasePage.Actions）,当前动作方法不需要返回数据处理时，可以考虑返回动作实例本身（self），在编写用例业务的时候就可以使用链式编程
 <br>
 * 示例：
@@ -92,7 +93,8 @@ class LoginPage(BasePage):
 >* 所有行中的第一列是标记列，第一行第一列是数据块开始标记
 >* 第一行: 用例名称信息(标记列的下一列是用例方法名称列，之后是用例名称列)
 >* 第二行: 用例数据标题
->* 第三行 开始 每一行都是一组完整的测试数据直至遇见空行或者下一个数据块
+>* 第三行 开始 每一行都是一组完整的测试数据直至遇见空行或者下一个数据块<br>
+> ![image testdata](https://github.com/hotswwkyo/SevenPytest/raw/master/img/testcase_data_excel_file.png"测试用例数据")
 
 ## 三、用例编写
 测试用例业务代码需要放在包uitest下的子包testcases下，编写规则如下：
