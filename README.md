@@ -8,11 +8,13 @@
 	  c、元素方法定位器区域的第三行是数据
 2、页面元素类（Elements）需要继承自根页面元素类（BasePage.Actions）,当前动作方法不需要返回数据处理时，可以考虑返回动作实例本身（self），在编写用例业务的时候就可以使用链式编程
 示例：
+
 # -*- coding:utf-8 -*-
 
 """
 登录页面示例
 """
+
 import os
 from uitest.pages import BasePage
 from uitest.pages import PageElementLocators as page_element_locators
@@ -97,8 +99,8 @@ class LoginPage(BasePage):
 
 """
 登录页面测试示例
-@author siwenwei
 """
+
 import pytest
 from uitest import settings
 from uitest.testcases import AbstractTestCase
