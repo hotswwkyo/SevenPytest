@@ -87,7 +87,6 @@ class LoginPage(BasePage):
             return self
 ```
 
-<br>
 ## 二、测试用例数据
 测试用例数据存放excel文件中，文件名需以测试类名作为名称，统一放在主目录下的testdata目录下。数据在文件中以用例数据块的方式存储，数据块定义如下：
 >* 所有行中的第一列是标记列，第一行第一列是数据块开始标记
@@ -95,7 +94,6 @@ class LoginPage(BasePage):
 >* 第二行: 用例数据标题
 >* 第三行 开始 每一行都是一组完整的测试数据直至遇见空行或者下一个数据块<br>
 > ![](https://github.com/hotswwkyo/SevenPytest/blob/master/img/testcase_data_excel_file.png)
-
 ## 三、用例编写
 测试用例业务代码需要放在包uitest下的子包testcases下，编写规则如下：
 >* 测试用例类需要继承抽象用例类（AbstractTestCase）
