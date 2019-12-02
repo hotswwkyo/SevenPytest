@@ -1,5 +1,6 @@
 # SevenPytest
 基于pytest实现，参考testng，定制测试用例收集方案和自定义参数化方案，使用pytest-html插件定制化html测试报告，采用page object设计模式，以及引入链式编程，语义清晰。自定义设计了测试用例数据以及页面元素定位数据存储方案。
+>* 详解见：https://blog.csdn.net/hotswwkyo/article/details/103211805
 ## 一、页面封装
 封装的页面需要继承根页面类放在pages库下，同时需要有两个内部类Elements（元素类）和Actions（动作类），分别用于封装页面的元素和页面动作。页面会自动实例化这两个类，分别赋给页面属性elements和actions。页面提供的元素查找方法与selenium相同。
     
