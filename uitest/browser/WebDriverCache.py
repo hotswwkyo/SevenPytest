@@ -115,6 +115,18 @@ class WebDriverCache(object):
         self._closed_drivers    = set()
         self._driver_alias      = StringKeyDict.StringKeyDict()
     
+    def get_index(self, alias_or_index):
+        
+        try:
+            index = self._resolve_alias_or_index(alias_or_index)
+        except ValueError:
+            return None
+        try:
+            driver = self._get_driver(alias_or_index)
+        except RuntimeError:
+            return None
+        return None if driver in self._closed_drivers else index
+    
     def _resolve_alias_or_index(self, alias_or_index):
         try:
             return self._resolve_alias(alias_or_index)

@@ -1,1 +1,5 @@
 *.pyc
+.project
+.pydevproject
+*.prefs
+report/uitest_report.html

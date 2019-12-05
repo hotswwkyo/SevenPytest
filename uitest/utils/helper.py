@@ -8,6 +8,7 @@ import re
 import inspect
 import tkinter
 import functools
+from functools import cmp_to_key
 import tkinter.simpledialog
 from . import typetools
 
@@ -52,7 +53,7 @@ def group_by_suffix_regex(string_key_dict, suffix_regex, is_remove_suffix=True, 
     
     # sorted
     if inspect.isfunction(cmp):
-        unique_suffixes = sorted(unique_suffixes, cmp = cmp)
+        unique_suffixes = sorted(unique_suffixes, key = cmp_to_key(cmp))
     elif cmp:
         unique_suffixes = sorted(unique_suffixes)
     
@@ -155,3 +156,29 @@ def escape_xpath_value(value):
     if '\'' in value:
         return "\"%s\"" % value
     return "'%s'" % value
+    
+class DictToObject(object):
+    def __init__(self, py_dict):
+        """
+        
+        """
+        if not isinstance(py_dict,dict):
+            raise ValueError("Data Type Must Be dict")
+        for field in py_dict:
+            value = py_dict[field]
+            if not isinstance(value,(dict,list)):
+                setattr(self,"%s" % field,value)
+            else:
+                if isinstance(value,dict):
+                    setattr(self,"%s" % field,self.__class__(value))
+                else :
+                    setattr(self,"%s" % field,self.analyze_list(value))
+    def analyze_list(self,array):
+        for index,value in enumerate(array):
+            if isinstance(value,list):
+                self.analyze_list(value)
+            elif isinstance(value,dict): #if element of list is dict,converts the value of the element in the list into the object
+                array[index] = self.__class__(value)
+            else:
+                pass
+        return array

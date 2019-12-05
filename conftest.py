@@ -19,6 +19,7 @@ from _pytest.compat import is_generator
 from _pytest.compat import get_real_func
 
 from uitest import settings
+from uitest.exceptions import NoOpenBrowser
 from uitest.testcases import AbstractTestCase
 from uitest.reader import TestCaseExcelFileReader
 from uitest.utils.ScreenshotCapturer import ScreenshotCapturer
@@ -64,7 +65,11 @@ def pytest_runtest_makereport(item, call):
         
         xfail = hasattr(report, "wasxfail")
         if (report.skipped and xfail) or (report.failed and not xfail):
-            capturer            = ScreenshotCapturer(item.cls.BROWSER_MANAGER.browser)
+            try:
+                browser = item.cls.BROWSER_MANAGER.browser
+            except NoOpenBrowser:
+                browser = None
+            capturer            = ScreenshotCapturer(browser)
             file_name           = report.description+".png"
             ss_result, ss_path  = capturer.screenshot(file_name)
             if settings.ATTACH_SCREENSHOT_TO_HTML_REPORT:

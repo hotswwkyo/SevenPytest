@@ -26,6 +26,7 @@ from uitest.utils.marker import AttributeMarker
 from uitest.utils.marker import ConstAttributeMarker
 from uitest.utils.AttributeManager import AttributeManager
 from uitest.utils.ScreenshotCapturer import ScreenshotCapturer
+from uitest.utils.HtmlSelectElement import HtmlSelectElement
 
 __version__ = "1.0"
 __author__ = "si wen wei"
@@ -130,6 +131,11 @@ class AbstractBasePage(AttributeManager):
     def maximize_window(self):
         
         self.browser.maximize_window()
+        return self
+        
+    def minimize_window(self):
+        
+        self.browser.minimize_window()
         return self
     
     def find_element_by_id(self, element_id, timeout=None, parent=None):
@@ -516,11 +522,24 @@ class AbstractBasePage(AttributeManager):
                 page.screenshot("debug.png", r"E:\SevenPytest\screenshots")
         """
         return ScreenshotCapturer(self._bm.browser, screenshot_dir=screenshot_dir).screenshot(file_name)
+
+    @property
+    def browser_session_id(self):
+        """Returns the currently active browser session id"""
         
+        return self._bm.browser.session_id
+     
+    @property
+    def source(self):
+        """Returns the entire HTML source of the current page or frame."""
+        
+        return self._bm.browser.page_source
+       
     @property
     def title(self):
+        """Returns the title of the current page."""
         
-        self._bm.browser.title
+        return self._bm.browser.title
         
     @property
     def active_element(self):
@@ -651,12 +670,73 @@ class AbstractBasePage(AttributeManager):
         message = "No window matching url(%s)" % url
         raise WindowNotFound(message)
     
+    def set_window_size(self, width, height, window_handle='current'):
+        """Sets current windows size to given ``width`` and ``height``
+        
+        @see WebDriver.set_window_size(self, width, height, windowHandle='current')
+        """
+        
+        self._bm.browser.set_window_size(width, height, window_handle)
+        return self
+    
+    def get_window_size(self, window_handle='current'):
+        """Gets the width and height of the current window.
+        
+        @see WebDriver.get_window_size(self, windowHandle='current')
+        """
+        return self._bm.browser.get_window_size(window_handle)
+        
+    def set_window_position(self, x, y, window_handle='current'):
+        
+        self._bm.browser.set_window_position(self, x, y, window_handle)
+        return self
+        
+    def get_window_position(self, window_handle='current'):
+        
+        return self._bm.browser.get_window_position(window_handle)
+        
+    def refresh(self):
+        """刷新当前页面"""
+        
+        self.browser.refresh()
+        return self
+        
+    def create_select_element_wrapper(self, select_element):
+        """创建操作html select 元素的包装器
+        
+        提供以下属性：
+            options 返回select元素的所有选项
+            all_selected_options 返回所有被选中的选项
+            first_selected_option 第一个选中项
+            
+        提供以下方法：
+            select_by_value(value) 通过选项中的value属性值选中选项
+            select_by_index(index)
+            select_by_visible_text(text) 通过选项中的文本选中选项 - <option>text</option>
+            
+            deselect_all()
+            deselect_by_value(value)
+            deselect_by_index(index)
+            deselect_by_visible_text(text)
+        
+        @see selenium.webdriver.support.select.Select
+        @see uitest.utils.HtmlSelectElement.HtmlSelectElement
+        """
+        
+        
+        return HtmlSelectElement(select_element)
+        
     def close(self):
         """ Closes the current window.
         
         @see selenium.webdriver.remote.webdriver.close()
         """
         self._bm.browser.close()
+        
+    def is_element_enabled(self, element):
+        """判断元素是否可用"""
+        
+        return ( element.is_enabled() and element.get_attribute("readonly") is None)
         
     class Elements(object):
         

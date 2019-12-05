@@ -73,18 +73,23 @@ class BrowserManager(AttributeManager):
     
     def open_browser(self, name, url=None, alias=None, *args, **kwargs):        
         
+        index = self._browser_cache.get_index(name)
+        if index:
+            self.switch_browser(name)
+            if url:
+                self.open_url(url)
+            return index
+        return self._open_new_browser(name, url, alias, *args, **kwargs)
+    
+    def _open_new_browser(self, name, url=None, alias=None, *args, **kwargs):
+        
         browser = self._make_browser(name, *args, **kwargs)
         browser.set_script_timeout(self.script_timeout)
-        browser.implicitly_wait(self.implicit_wait_timeout)     
-        try:
-            if url:
-                browser.get(url)
-        except Exception as err:
-            self.register_browser(browser, alias)
-            message = "Opened browser with session id %s but failed to open url '%s'." % (browser.session_id, url)
-            print(message)
-        
-        return self.register_browser(browser, alias)
+        browser.implicitly_wait(self.implicit_wait_timeout)
+        index = self.register_browser(browser, alias)
+        if url:
+            browser.get(url)        
+        return index
     
     def ie(self, url = None, alias = None, *args, **kwargs):        
         
