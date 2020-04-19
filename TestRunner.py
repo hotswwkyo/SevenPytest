@@ -8,7 +8,7 @@ __version__ = "1.0"
 __author__ = "si wen wei"
 
 import pytest
-from uitest import settings
+from sevenautotest import settings
 
 class TestRunner(object):
     

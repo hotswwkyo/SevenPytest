@@ -1,5 +1,5 @@
 # SevenPytest
-基于pytest实现，参考testng，定制测试用例收集方案和自定义参数化方案，使用pytest-html插件定制化html测试报告，采用page object设计模式，以及引入链式编程，语义清晰。自定义设计了测试用例数据以及页面元素定位数据存储方案。
+基于pytest实现，参考testng，定制测试用例收集方案和自定义参数化方案，使用pytest-html插件定制化html测试报告，采用test object设计模式，以及引入链式编程，语义清晰。自定义设计了测试用例数据以及页面元素定位数据存储方案。
 >* 详解见：https://blog.csdn.net/hotswwkyo/article/details/103211805
 ## 一、页面封装
 封装的页面需要继承根页面类放在pages库下，同时需要有两个内部类Elements（元素类）和Actions（动作类），分别用于封装页面的元素和页面动作。页面会自动实例化这两个类，分别赋给页面属性elements和actions。页面提供的元素查找方法与selenium相同。
@@ -20,14 +20,17 @@
 登录页面示例
 """
 
+__version__ = "1.0"
+__author__ = "si wen wei"
+
 import os
-from uitest.pages import BasePage
-from uitest.pages import PageElementLocators as page_element_locators
+from sevenautotest.basepage import BasePage
+from sevenautotest.basepage import PageElementLocators as page_element_locators
 
 class LoginPage(BasePage):  
     
     class Elements(BasePage.Elements):
-      
+        
         @property
         @page_element_locators()
         def login_frame(self, locators):
@@ -88,6 +91,57 @@ class LoginPage(BasePage):
             return self
 ```
 
+## 二、接口封装
+
+* 示例：
+
+```python       
+# -*- coding: utf-8 -*-
+"""
+
+"""
+
+__version__ = "1.0"
+__author__ = "si wen wei"
+
+import requests
+from urllib.parse import urljoin
+from sevenautotest.utils.DataProvider import DataProvider as data_provider
+
+class NeteaseCloudMusicApi(object):
+    """网易云音乐接口封装"""
+    
+    def __init__(self, url):
+        self.url = url
+    
+    @data_provider()
+    def song_detail(self, apidata, song_id):
+        """歌曲信息"""
+        
+        api_path = apidata.get("接口路径")
+        payload = {
+                    "id":song_id,
+                    "ids":"[{}]".format(song_id)
+        }
+        res = requests.get(url=urljoin(self.url, api_path), params=payload)
+        return res
+        
+    @data_provider()
+    def singer_album(self, apidata, singer_id, offset=0, total=True, limit=5):
+        """歌手专辑"""
+        
+        api_path    = apidata.get("接口路径")
+        full_path   = urljoin(self.url, api_path)
+        payload = {
+                    "id":singer_id,
+                    "offset":offset,
+                    "total":total,
+                    "limit":limit
+        }
+        res = requests.get(url=urljoin(full_path, singer_id), params=payload)
+        return res
+```
+
 ## 二、测试用例数据
 测试用例数据存放excel文件中，文件名需以测试类名作为名称，统一放在主目录下的testdata目录下。数据在文件中以用例数据块的方式存储，数据块定义如下：
 >* 所有行中的第一列是标记列，第一行第一列是数据块开始标记
@@ -98,12 +152,12 @@ class LoginPage(BasePage):
 >![](https://github.com/hotswwkyo/SevenPytest/blob/master/img/testcase_data_excel_file.png)
 
 ## 三、用例编写
-测试用例业务代码需要放在包uitest下的子包testcases下，编写规则如下：
->* 测试用例类需要继承抽象用例类（AbstractTestCase）
+测试用例业务代码需要放在包sevenautotest下的子包testcases下，编写规则如下：
+>* 测试用例类需要继承测试基类（BaseTestCase）
 >* 测试方法需要使用标记pytest.mark.testcase进行标记，才会被当作测试用例进行收集，使用位置参数设置用例名，关键字参数author设置用例编        写者和editor设置最后修改者
 >* 测试方法需要接收一个参数，参数化时从测试数据文件取出的该方法测试数据作为字典传给该测试方法
 
-* 示例：
+* 示例1：
 
 ```python       
 # -*- coding:utf-8 -*-
@@ -112,12 +166,15 @@ class LoginPage(BasePage):
 登录页面测试示例
 """
 
-import pytest
-from uitest import settings
-from uitest.testcases import AbstractTestCase
-from uitest.pages.login import LoginPage
+__version__ = "1.0"
+__author__ = "si wen wei"
 
-class LoginPageTest(AbstractTestCase):
+import pytest
+from sevenautotest import settings
+from sevenautotest.basetestcase import BaseTestCase
+from sevenautotest.testobjects.pages.login import LoginPage
+
+class LoginPageTest(BaseTestCase):
     
     def setup_class(self):
         
@@ -125,8 +182,9 @@ class LoginPageTest(AbstractTestCase):
         
     def setup_method(self):
         
-        pass    
+        pass   
     
+    @pytest.mark.skip(reason="跳过")
     @pytest.mark.testcase("成功登陆测试", author="siwenwei", editor="")
     def test_successfully_login(self, testdata):
         
@@ -135,9 +193,9 @@ class LoginPageTest(AbstractTestCase):
         url     = testdata.get("登录页面URL")
         
         page    = LoginPage()
-        page.chrome(executable_path = settings.CHROME_DRIVER_PATH).maximize_window().open_url(url).actions.select_login_frame().sleep(1000).username(name).password(pwd).sleep(2000).login().sleep(3000)
+        page.chrome().maximize_window().open_url(url).actions.select_login_frame().sleep(1).username(name).password(pwd).sleep(2).login().sleep(3)
         page.screenshot("successfully login.png")
-        page.sleep(3000)
+        page.sleep(3)
         
     def teardown_method(self):
         
@@ -145,14 +203,85 @@ class LoginPageTest(AbstractTestCase):
         
     def teardown_class(self):
         
-        self.BROWSER_MANAGER.close_all_browsers()
+        self.DRIVER_MANAGER.close_all_drivers()
         
 if __name__=="__main__":
-    pass       
+    pass
+```
+
+* 示例2：
+
+```python       
+# -*- coding:utf-8 -*-
+
+"""
+网易云音乐接口测试示例
+"""
+
+__version__ = "1.0"
+__author__ = "si wen wei"
+
+import json
+import pytest
+from sevenautotest import settings
+from sevenautotest.utils import TestAssert
+from sevenautotest.basetestcase import BaseTestCase
+from sevenautotest.testobjects.apis.NeteaseCloudMusicApi import NeteaseCloudMusicApi
+
+class NeteaseCloudMusicApiTest(BaseTestCase):
+    
+    def setup_class(self):
+        
+        self.api = NeteaseCloudMusicApi(settings.API_INFO[1][0])
+        
+    def setup_method(self):
+        
+        pass    
+    
+    @pytest.mark.testcase("查询歌曲详情测试", author="siwenwei", editor="")
+    def test_check_song_detail(self, testdata):
+        
+        song_id     = testdata.get("歌曲id")        
+        e_name      = testdata.get("预期歌曲名称")
+        response    = self.api.song_detail(song_id)
+        res         = json.loads(response.text)
+        
+        songs   = res["songs"]
+        song    = songs[0]
+        name    = song["name"]
+        if name !=e_name:
+            TestAssert.fail("%s != %s" % (name,e_name))
+            
+    @pytest.mark.testcase("查询歌手专辑测试", author="siwenwei", editor="")
+    def test_get_singer_album(self, testdata):
+        
+        singer_id   = testdata.get("歌手id")
+        offset      = testdata.get("offset")
+        total       = testdata.get("total")
+        limit       = testdata.get("limit")
+        e_name      = testdata.get("封面艺人名")
+        response    = self.api.singer_album(singer_id ,offset=offset, total=total, limit=limit)
+        res         = json.loads(response.text)
+        
+        artist      = res["artist"]
+        name        = artist["name"]
+        if name !=e_name:
+            TestAssert.fail("%s != %s" % (name,e_name))        
+        
+    def teardown_method(self):
+        
+        pass
+        
+    def teardown_class(self):
+        
+        self.DRIVER_MANAGER.close_all_drivers()
+        
+if __name__=="__main__":
+    pass
 ```
 
 ## 四、执行测试
 直接运行主目录下的TestRunner.py，也可以在命令行使用pytest命令执行
 ## 五、测试报告
 增加用例中文名称、测试数据、用例编写人等关键信息列，如图：
-![](https://github.com/hotswwkyo/SevenPytest/blob/master/img/html_report.png)
+>![](https://github.com/hotswwkyo/SevenPytest/blob/master/img/html_report.png)
