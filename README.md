@@ -12,8 +12,8 @@ web页面和app页面封装应继承自根基础页面类BasePage。同时封装
 	>    2. 元素方法定位器区域的第二行是数据标题
 	>    3. 元素方法定位器区域的第三行是数据<br>
 	>    ![](https://github.com/hotswwkyo/SevenPytest/blob/master/img/page_element_locators.png)
-* 页面动作类（Actions）需要继承自根页面元素类（BasePage.Actions）,当前动作方法不需要返回数据处理时，可以考虑返回动作实例本身（self），在编写用例业务的时候就可以使用链式编程
-<br>
+* 页面动作类（Actions）需要继承自根页面元素类（BasePage.Actions）,当前动作方法不需要返回数据处理时，可以考虑返回动作实例本身（self），在编写用例业务的时候就可以使用链式编程<br>
+
 * web页面封装示例：
 
 ```python
@@ -358,7 +358,7 @@ class SettlementFilmDetailPage(BasePage):
             return self
 
 ```
-# 微信小程序页面封装
+## 二、微信小程序页面封装
 微信小程序自动化测试需要下载并安装微信官方提供的自动化测试库minium，以及微信开发工具，同时还要获得小程序源码。安装官方指导文档配置完成后，就可以按照以下说明进行封装了。
 微信小程序页面封装应继承自根基础页面类BaseMiniumPage。同样封装的页面类需要有两个内部类Elements（元素类）和Actions（动作类），分别用于封装页面的元素和页面动作。这两个内部类Elements（元素类）和Actions（动作类）应分别继承自类BaseMiniumPage.Elements和BaseMiniumPage.Actions。页面会自动实例化这两个类，分别赋给页面属性elements和actions。Elements（元素类）和Actions（动作类）这两个类实例都有一个page属性指向当前封装的页面，页面提供的两个与minium查找元素的同名方法：
 >- <em style="color:#3572A5;">get_element(self, selector, inner_text=None, text_contains=None,value=None, max_timeout=20)</em>
@@ -701,7 +701,7 @@ class ADBasketPage(BaseMiniumPage):
             return self
 
 ```
-## 二、接口封装
+## 三、接口封装
 
 * 示例：
 
@@ -741,7 +741,7 @@ class NeteaseCloudMusicApi(object):
 
 ```
 
-## 二、测试用例数据
+## 四、测试用例数据
 测试用例数据存放excel文件中，文件名需以测试类名作为名称，统一放在主目录下的testdata目录下。数据在文件中以用例数据块的方式存储，数据块定义如下：
 >* 所有行中的第一列是标记列，第一行第一列是数据块开始标记
 >* 第一行: 用例名称信息(标记列的下一列是用例方法名称列，之后是用例名称列)
@@ -750,7 +750,7 @@ class NeteaseCloudMusicApi(object):
 
 >![](https://github.com/hotswwkyo/SevenPytest/blob/master/img/testcase_data_excel_file.png)
 
-## 三、用例编写
+## 五、用例编写
 测试用例业务代码需要放在包sevenautotest下的子包testcases下，编写规则如下：
 >* 测试用例类需要继承测试基类（BaseTestCase）
 >* 测试方法需要使用标记pytest.mark.testcase进行标记，才会被当作测试用例进行收集，使用位置参数设置用例名，关键字参数author设置用例编        写者和editor设置最后修改者
@@ -960,8 +960,8 @@ class YuyanTest(BaseTestCase):
 
         self.WECHAT_MANAGER.release_minium()
 ```
-## 四、执行测试
+## 六、执行测试
 直接运行主目录下的TestRunner.py，也可以在命令行使用pytest命令执行
-## 五、测试报告
+## 七、 测试报告
 增加用例中文名称、测试数据、用例编写人等关键信息列，如图：
 >![](https://github.com/hotswwkyo/SevenPytest/blob/master/img/html_report.png)
