@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-
-"""
-
-__version__ = "1.0"
-__author__ = "si wen wei"
 import requests
 from urllib.parse import urljoin
 from sevenautotest.utils.DataProvider import DataProvider as data_provider
+
+__version__ = "1.0"
+__author__ = "si wen wei"
 
 
 class NeteaseCloudMusicApi(object):

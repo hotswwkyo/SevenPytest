@@ -1,7 +1,4 @@
 # -*- coding:utf-8 -*-
-"""
-网易云音乐接口测试示例
-"""
 import json
 import pytest
 from sevenautotest import settings
@@ -11,6 +8,9 @@ from sevenautotest.testobjects.apis.NeteaseCloudMusicApi import NeteaseCloudMusi
 
 
 class NeteaseCloudMusicApiTest(BaseTestCase):
+    """
+    网易云音乐接口测试示例
+    """
     def setup_class(self):
 
         self.api = NeteaseCloudMusicApi(settings.API_INFO[1][0])
