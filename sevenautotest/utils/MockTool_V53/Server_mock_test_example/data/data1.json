@@ -1,0 +1,158 @@
+[
+  {
+    "api_path": "/tmsServer/list",
+    "api_request_method": "GET",
+    "api_request_data_content": "isMod=1",
+    "api_request_data_type": "form",
+    "api_response": {
+      "code": "0",
+      "message": "success",
+      "total": 1,
+      "results": [
+        {
+          "id": 1,
+          "tmsUuid": "3408e1dc-6cb4-474e-b9aa-353aa81524ea",
+          "cinemaId": "31720",
+          "cinemaCode": "32017711",
+          "cinemaName": "南京鼓楼荔枝广场影城",
+          "manageIp": "10.1.31.56",
+          "port": 8090,
+          "serverMod": "498",
+          "isSmartCinema": "YES",
+          "isSmartWiz": "YES",
+          "isValidateSch": "NO",
+          "isMod": 1,
+          "serverInstallDate": "2020-04-14T18:16:55",
+          "serverEndDate": "2022-04-29T18:16:55",
+          "lastTelnetTime": null,
+          "lastConnectTime": null,
+          "manufacturer": "",
+          "serverSn": "",
+          "softVer": null,
+          "vpnIp": null,
+          "serverBrand": null,
+          "smartTmsType": "中巴智慧",
+          "pos": "KADD",
+          "totalSpace": null,
+          "freeSpace": null,
+          "isSupportRemotePlay": 1
+        }
+      ]
+    }
+  },
+
+  {
+    "api_path": "/cinema/detail",
+    "api_request_method": "GET",
+    "api_request_data_content":  "cinemaCode=32017711",
+    "api_request_data_type": "form",
+    "api_response": {
+      "cinemaCode": "32017711",
+      "cinemaNameCn": "南京鼓楼荔枝广场影城",
+      "cinemaNameEn": null,
+      "ipsegment": null,
+      "province": null,
+      "city": null,
+      "address": "南京鼓楼荔枝广场",
+      "screenNum": null,
+      "hallNum": null,
+      "investor": "中影院线",
+      "chain": null,
+      "isSmartCinema": "YES",
+      "isValidateSch": "NO",
+      "isSmartWiz": "YES",
+      "isKdmIssueToTms": null,
+      "tms": {
+        "tmsUuid": "3408e1dc-6cb4-474e-b9aa-353aa81524ea",
+        "manageIp": "10.1.31.56",
+        "port": 8090,
+        "totalSpace": null,
+        "freeSpace": null,
+        "lastConnectTime": null,
+        "lastTelnetTime": null
+      },
+      "contacts": [
+        {
+          "id": 1,
+          "contactName": "老王",
+          "phoneOne": "13211111111",
+          "phoneTwo": null,
+          "phoneThree": null,
+          "contactMail": "laowang@qq.com",
+          "position": "经理"
+        },
+        {
+          "id": 2,
+          "contactName": "老李",
+          "phoneOne": "13222222222",
+          "phoneTwo": null,
+          "phoneThree": null,
+          "contactMail": "laoli@qq.com",
+          "position": "管理员"
+        }
+      ],
+      "code": 0,
+      "message": "成功"
+    }
+  },
+
+  {
+    "api_path": "/crm/ad/status",
+    "api_request_method": "GET",
+    "api_request_data_content": "cinemaCodes=32017711",
+    "api_request_data_type": "form",
+    "api_response": {
+      "code": 0,
+      "message": "success",
+      "result": [
+        {
+          "cinemaCode": "32017711",
+          "adDistributeOpenStatus": 1,
+          "adScheduleDistributeOpenStatus": 1,
+          "holders": [
+            {
+              "holderName": "广告商1",
+              "holderCode": "2020",
+              "holderHalls": [
+                {
+                  "hallName": "广告商1厅",
+                  "posHallNo": "123456543",
+                  "posHallName": "pos广告1厅",
+                  "hallAdScheduleDistributeOpenStatus": 1,
+                  "hallDistributeOpenStatus": 1
+                },
+                {
+                  "hallName": "广告商2厅",
+                  "posHallNo": "673447856",
+                  "posHallName": "pos广告2厅",
+                  "hallAdScheduleDistributeOpenStatus": 1,
+                  "hallDistributeOpenStatus": 1
+                }
+              ]
+            },
+            {
+              "holderName": "广告商2",
+              "holderCode": "2222",
+              "holderHalls": [
+                {
+                  "hallName": "广告商3厅",
+                  "posHallNo": "876445679",
+                  "posHallName": "pos广告3厅",
+                  "hallAdScheduleDistributeOpenStatus": 1,
+                  "hallDistributeOpenStatus": 1
+                },
+                {
+                  "hallName": "广告商4厅",
+                  "posHallNo": "252536764",
+                  "posHallName": "pos广告4厅",
+                  "hallAdScheduleDistributeOpenStatus": 1,
+                  "hallDistributeOpenStatus": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]
