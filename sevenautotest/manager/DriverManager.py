@@ -115,9 +115,9 @@ class DriverManager(AttributeManager):
 
     def open_browser(self, name, url=None, alias=None, *args, **kwargs):
 
-        index = self._driver_cache.get_index(name)
+        index = self._driver_cache.get_index(alias)
         if index:
-            self.switch_browser(name)
+            self.switch_browser(alias)
             if url:
                 self.open_url(url)
             return index
