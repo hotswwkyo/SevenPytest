@@ -20,6 +20,8 @@ class BasePage(AbstractBasePage):
         """拼接xpath"""
 
         slash = '/'
+        if x2.strip() == "":
+            return x1
         if x1.endswith(slash) and x2.startswith(slash):
             return x1 + x2[1:]
         elif not x1.endswith(slash) and x2.startswith(slash):
@@ -70,12 +72,19 @@ class BasePage(AbstractBasePage):
                 fn_find_table_rows: 查找表格行函数，一个参数，接收查询行信息条件的字典， 返回所有匹配的行
                 fn_get_all_table_rows: 获取所显示的表格所有行的无参数函数,
                 rows: 行信息字典列表，每一行信息是一个字典，[{},...],键定义由具体页面所调用该方法的方法定义
-                checksettings: 检查设置,
-                    check_total: 检查总数是否一致开关 True - 检查 False - 不检查
+                checksettings: 检查设置变长字典参数，参数如下
+                    check_total: 检查找到的匹配行数是否与预期行数一致 True - 检查 False - 不检查
+                    expected_total_rows: 预期行数，如果不传入该参数则预期的行数取传入行的总数即len(rows)
+                    check_only_has_matching_rows: 检查表格只有匹配的行 True - 检查 False - 不检查
             """
+            is_empty_rows = True
+            for one in rows:
+                if one:
+                    is_empty_rows = False
+            if is_empty_rows:
+                self.page.fail('行信息参数rows不能为空')
 
             actual = 0
-            check_total_key = 'check_total'
             not_found_msg = []
             row_times_map = []
 
@@ -90,10 +99,12 @@ class BasePage(AbstractBasePage):
                 actual = actual + times
             if not_found_msg:
                 self.page.fail('\n'.join(not_found_msg))
-            expected = len(rows)
-            if check_total_key in checksettings and checksettings[check_total_key]:
+
+            if checksettings.get("check_total", False):
+                expected = checksettings.get("expected_total_rows", len(rows))
                 if actual != expected:
                     self.page.fail('找到的行数({})和预期的行数({})不相等'.format(actual, expected))
+            if checksettings.get("check_only_has_matching_rows", False):
                 total = len(fn_get_all_table_rows())
                 if actual != total:
                     self.page.fail('找到的行数({})和实际页面显示的行数({})不相等'.format(actual, total))

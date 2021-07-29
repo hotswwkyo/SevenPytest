@@ -435,7 +435,6 @@ class AbstractBasePage(AttributeManager):
             stacktrace = getattr(e, 'stacktrace', None)
             raise NoSuchWindowException(message, screen, stacktrace)
         except Exception as e:
-            print(message)
             raise e
         else:
             return element
@@ -465,14 +464,15 @@ class AbstractBasePage(AttributeManager):
             message = message + "in {timeout}".format(timeout=timeout)
             screen = getattr(t, 'screen', None)
             stacktrace = getattr(t, 'stacktrace', None)
-            raise TimeoutException(message, screen, stacktrace)
+            # raise TimeoutException(message, screen, stacktrace)
+            # print(message)
+            return []
         except NoSuchWindowException as e:
             message = message + "," + e.message
             screen = getattr(e, 'screen', None)
             stacktrace = getattr(e, 'stacktrace', None)
             raise NoSuchWindowException(message, screen, stacktrace)
         except Exception as e:
-            print(message)
             raise e
         else:
             return elements
@@ -1056,6 +1056,7 @@ class AbstractBasePage(AttributeManager):
             self.page = page
 
         def sleep(self, seconds):
+            """延时"""
 
             self.page.sleep(seconds)
             return self
@@ -1066,6 +1067,7 @@ class AbstractBasePage(AttributeManager):
             self.page = page
 
         def sleep(self, seconds):
+            """延时"""
 
             self.page.sleep(seconds)
             return self
