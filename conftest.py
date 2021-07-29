@@ -83,8 +83,8 @@ def pytest_runtest_makereport(item, call):
             file_name = report.description + ".png"
             ss_result, ss_path = capturer.screenshot(file_name)
             if settings.ATTACH_SCREENSHOT_TO_HTML_REPORT:
-                template = """<div><img src="data:image/png;base64,%s" alt="screenshot" style="width:600px;height:300px;" onclick="window.open(this.src)" align="right"/></div>"""
-                html = template % ScreenshotCapturer.screenshot_file_to_base64(ss_path) if ss_result else """<div>截图失败</div>"""
+                template = """<div><img src="data:image/png;base64,%s" alt="%s" style="width:600px;height:300px;" onclick="window.open(this.src)" align="right"/></div>"""
+                html = template % (ScreenshotCapturer.screenshot_file_to_base64(ss_path) if ss_result else """<div>截图失败</div>""", file_name)
                 extra.append(pytest_html.extras.html(html))
 
     report.extra = extra

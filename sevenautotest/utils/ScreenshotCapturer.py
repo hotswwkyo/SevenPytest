@@ -93,7 +93,7 @@ class ScreenshotCapturer(AttributeManager):
                 raw_data = f.read()
         except IOError as err:
             print(err)
-        return base64.b64encode(raw_data)
+        return base64.b64encode(raw_data).decode()
 
     def _get_screenshot_path(self, filename):
 
