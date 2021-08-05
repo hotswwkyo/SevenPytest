@@ -80,11 +80,15 @@ def pytest_runtest_makereport(item, call):
             except NoOpenBrowser:
                 driver = None
             capturer = ScreenshotCapturer(driver)
-            file_name = report.description + ".png"
-            ss_result, ss_path = capturer.screenshot(file_name)
+            # 不再保存失败截图 comment by siwenwei at 2021-08-04
+            # file_name = report.description + ".png"
+            # ss_result, ss_path = capturer.screenshot(file_name)
+            img_base64 = capturer.screenshot_as_base64()
             if settings.ATTACH_SCREENSHOT_TO_HTML_REPORT:
                 template = """<div><img src="data:image/png;base64,%s" alt="%s" style="width:600px;height:300px;" onclick="window.open(this.src)" align="right"/></div>"""
-                html = template % (ScreenshotCapturer.screenshot_file_to_base64(ss_path) if ss_result else """<div>截图失败</div>""", file_name)
+                # comment by siwenwei at 2021-08-04
+                # html = template % (ScreenshotCapturer.screenshot_file_to_base64(ss_path) if ss_result else """<div>截图失败</div>""", "screenshot of test failure")
+                html = template % (img_base64 if img_base64 else """<div>截图失败</div>""", "screenshot of test failure")
                 extra.append(pytest_html.extras.html(html))
 
     report.extra = extra

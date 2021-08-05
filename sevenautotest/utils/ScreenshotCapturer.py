@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+import io
 import os
 import base64
 import pyautogui
@@ -80,6 +81,24 @@ class ScreenshotCapturer(AttributeManager):
         if not result:
             result = self._pil_screenshot(path)
         return (result, path)
+
+    def screenshot_as_base64(self):
+
+        if self.driver:
+            return self.driver.get_screenshot_as_base64()
+        img = pyautogui.screenshot()
+        temp = io.BytesIO()
+        try:
+            img.save(temp, "png")
+        except ValueError:
+            pass
+        except IOError:
+            pass
+        finally:
+            del img
+        img_datas = temp.getvalue()
+        del temp
+        return base64.b64encode(img_datas).decode()
 
     @classmethod
     def screenshot_file_to_base64(cls, file_full_path):
