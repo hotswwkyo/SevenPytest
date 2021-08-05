@@ -28,25 +28,78 @@ from sevenautotest.utils.ScreenshotCapturer import ScreenshotCapturer
 @pytest.mark.optionalhook
 def pytest_html_results_table_header(cells):
 
-    cells.insert(1, html.th('Description'))
-    cells.insert(2, html.th('TestData'))
-    cells.insert(3, html.th('Time', class_='sortable time', col='time'))
-    cells.insert(4, html.th('Author'))
-    cells.insert(5, html.th('Editor'))
+    cells.insert(0, html.th('用例名称', style="width:30%;"))
+    cells.insert(1, html.th('用例数据', style="width:36%;"))
+    # cells.insert(2, html.th('执行时间', class_='sortable time', col='time'))
+    cells.insert(2, html.th('编写人', style="width:5%;"))
+    cells.insert(3, html.th('修改人', style="width:5%;"))
     # cells.insert(1,html.th("Test_nodeid"))
     cells.pop()
+    change_opts = {
+        "Test": {
+            "text": "用例方法",
+            "style": "width: 10%;"
+        },
+        "Duration": {
+            "text": "耗时",
+            "style": "width:6%;"
+        },
+        "Result": {
+            "text": "测试结果",
+            "style": "width:10%;"
+        },
+    }
+    for cell in cells:
+        value = cell[0] if cell else ""
+        if value in change_opts:
+            details = change_opts[value]
+            cell[0] = details["text"]
+            skey = "style"
+            if skey in details:
+                add_style = details.get(skey, "")
+                style = cell.attr.__dict__.get("style", "")
+                if style:
+                    cell.attr.__dict__.update(dict(style="{};{}".format(style.rstrip(";"), add_style)))
+                else:
+                    cell.attr.__dict__.update(dict(style=add_style))
+
+
+@pytest.mark.optionalhook
+def pytest_html_results_summary(prefix, summary, postfix):
+    prefix.extend([html.p("日期: {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))])
+    for item in summary:
+        if not item:
+            continue
+        text = item[0]
+        if text == "(Un)check the boxes to filter the results.":
+            item[0] = "(取消)勾选复选框，筛选显示测试结果。"
+        elif 'tests ran in' in text:
+            parts = text.split(" ")
+            try:
+                total = parts[0]
+                seconds = parts[-3]
+            except IndexError:
+                pass
+            else:
+                item[0] = "执行了{}个测试用例，整个测试耗时：{}秒。".format(total, seconds)
 
 
 @pytest.mark.optionalhook
 def pytest_html_results_table_row(report, cells):
 
-    cells.insert(1, html.td(report.description if hasattr(report, "description") else ""))
-    cells.insert(2, html.td(report.testdata if hasattr(report, "testdata") else ""))
-    cells.insert(3, html.td(datetime.utcnow(), class_='col-time'))
-    cells.insert(4, html.td(report.author if hasattr(report, "author") else ""))
-    cells.insert(5, html.td(report.editor if hasattr(report, "editor") else ""))
+    cells.insert(0, html.td(report.description if hasattr(report, "description") else ""))
+    cells.insert(1, html.td(report.testdata if hasattr(report, "testdata") else ""))
+    # cells.insert(2, html.td(datetime.now(), class_='col-time'))
+    cells.insert(2, html.td(report.author if hasattr(report, "author") else ""))
+    cells.insert(3, html.td(report.editor if hasattr(report, "editor") else ""))
     # cells.insert(1,html.td(report.nodeid))
     cells.pop()
+    for cell in cells:
+        value = cell[0] if cell else ""
+        if value == report.nodeid:
+            # cell[0] = report.nodeid.split("::")[-1]
+            cell[0] = "..."
+            cell.attr.__dict__.update(dict(title=report.nodeid, style="text-align: center;font-weight: bold;"))
 
 
 @pytest.mark.hookwrapper
@@ -105,6 +158,10 @@ def pytest_configure(config):
 
     config.addinivalue_line("python_files", "*.py")
     config.addinivalue_line("filterwarnings", "ignore::UserWarning")
+
+    opts = ["JAVA_HOME", "Packages", "Platform", "Plugins", "Python"]
+    for opt in opts:
+        config._metadata.pop(opt, None)
 
 
 # def pytest_collect_file(path, parent):
