@@ -411,6 +411,8 @@ class AbstractBasePage(AttributeManager):
         @param locator  - 元素定位器
         @param timeout  - 查找元素超时时间
         @param parent   - 父元素,提供则从父元素下查找
+        @raise NoSuchElementException - if the element wasn't found
+        @raise TimeoutException - if the element wasn't found when time out
         @return         - WebElement - the element if it was found
         """
 
@@ -421,6 +423,10 @@ class AbstractBasePage(AttributeManager):
             driver = parent.parent
         else:
             driver = self.browser
+
+        # 如果设置的超时时间无效或者超时时间小于0，则不会执行超时
+        if not (self._validate_timeout(timeout) and timeout > 0):
+            return driver.find_element(by, locator)
         message = "{} with locator '{}' not found".format(by, locator)
         try:
             element = WebDriverWait(driver, timeout).until(lambda x: x.find_element(by, locator))
@@ -457,6 +463,9 @@ class AbstractBasePage(AttributeManager):
             driver = parent.parent
         else:
             driver = self.browser
+        # 如果设置的超时时间无效或者超时时间小于0，则不会执行超时
+        if not (self._validate_timeout(timeout) and timeout > 0):
+            return driver.find_elements(by, locator)
         message = "{} with locator '{}' not found.".format(by, locator)
         try:
             elements = WebDriverWait(driver, timeout).until(lambda x: x.find_elements(by, locator))
@@ -1045,6 +1054,10 @@ class AbstractBasePage(AttributeManager):
         """判断元素是否可用"""
 
         return (element.is_enabled() and element.get_attribute("readonly") is None)
+
+    def get_value(self, element):
+
+        return element.get_attribute("value")
 
     def raise_no_such_element_exc(self, message):
 
