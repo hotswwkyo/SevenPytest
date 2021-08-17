@@ -76,8 +76,16 @@ class BasePage(AbstractBasePage):
                     check_total: 检查找到的匹配行数是否与预期行数一致 True - 检查 False - 不检查
                     expected_total_rows: 预期行数，如果不传入该参数则预期的行数取传入行的总数即len(rows)
                     check_only_has_matching_rows: 检查表格只有匹配的行 True - 检查 False - 不检查
+                    fail_msg: 附加失败消息
+                    show_failed_details: True --- 显示失败详情 False --- 不显示失败详情, 默认为True
             """
             is_empty_rows = True
+            show_failed_details = checksettings.get("show_failed_details", True)
+            fail_msg = checksettings.get("fail_msg", "")
+            if not isinstance(fail_msg, (str, bytes)):
+                fail_msg = ""
+            if isinstance(fail_msg, bytes):
+                fail_msg = fail_msg.decode()
             for one in rows:
                 if one:
                     is_empty_rows = False
@@ -98,16 +106,25 @@ class BasePage(AbstractBasePage):
                 row_times_map.append((row, times))
                 actual = actual + times
             if not_found_msg:
-                self.page.fail('\n'.join(not_found_msg))
+                if show_failed_details:
+                    self.page.fail(fail_msg + ': ' + '\n'.join(not_found_msg))
+                else:
+                    self.page.fail('\n'.join(not_found_msg))
 
             if checksettings.get("check_total", False):
                 expected = checksettings.get("expected_total_rows", len(rows))
                 if actual != expected:
-                    self.page.fail('找到的行数({})和预期的行数({})不相等'.format(actual, expected))
+                    full_msg = '找到的行数({})和预期的行数({})不相等'.format(actual, expected)
+                    if show_failed_details:
+                        full_msg = fail_msg + ": " + full_msg
+                    self.page.fail(full_msg)
             if checksettings.get("check_only_has_matching_rows", False):
                 total = len(fn_get_all_table_rows())
                 if actual != total:
-                    self.page.fail('找到的行数({})和实际页面显示的行数({})不相等'.format(actual, total))
+                    full_msg = '找到的行数({})和实际页面显示的行数({})不相等'.format(actual, total)
+                    if show_failed_details:
+                        full_msg = fail_msg + ": " + full_msg
+                    self.page.fail(full_msg)
             return self
 
 
