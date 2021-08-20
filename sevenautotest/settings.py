@@ -116,7 +116,7 @@ TEST_FILE1 = os.path.join(TESTCASES_DIR, 'BackstageAdlistTest.py::BackstageAdlis
 
 TEST_FILE2 = os.path.join(TESTCASES_DIR, 'YuyanTest.py::YuyanTest::test_order_to_be_paid_is_displayed_correctly')
 
-TEST_FILE3 = os.path.join(TESTCASES_DIR, 'BackstageUserlistTest.py::BackstageUserlistTest::test_search_with_shanghu_after_change_geren_to_shanghu')
+TEST_FILE3 = os.path.join(TESTCASES_DIR, 'vncviewer_page_test.py::VNCViewerPageTest::connect_remote_pc_desktop')
 
 TESTCASES = [TEST_FILE3]
 # 执行测试的pytest命令     参数--disable-warnings 禁止显示警告信息

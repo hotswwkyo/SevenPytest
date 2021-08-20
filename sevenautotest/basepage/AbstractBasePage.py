@@ -6,6 +6,7 @@
 import time
 import base64
 import inspect
+import subprocess
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -15,6 +16,7 @@ from selenium.common.exceptions import NoSuchWindowException
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.wait import WebDriverWait
 from sevenautotest.manager import DriverManager
+from sevenautotest.manager.app_helper import WinAppDriverHelper
 from sevenautotest.exceptions import WindowNotFound
 from sevenautotest.utils import helper
 from sevenautotest.utils import typetools
@@ -32,7 +34,9 @@ class AbstractBasePage(AttributeManager):
 
     """
     KEYS = AttributeMarker(Keys, True, "键盘按键")
+    DESKTOP_ALIAS = AttributeMarker("WindowDesktop", True, "创建的window桌面会话默认别名")
     DRIVER_MANAGER = AttributeMarker(DriverManager(), True, "Driver管理器")
+    WIN_APP_DRIVER_HELPER = AttributeMarker(WinAppDriverHelper(), True, "启动和关闭WinAppDriver.exe助手")
 
     def __init__(self, browser=None, url=None, alias=None, timeout=0.0, *args, **kwargs):
 
@@ -77,6 +81,11 @@ class AbstractBasePage(AttributeManager):
         return self._bm.driver
 
     @property
+    def window_app(self):
+
+        return self._bm.driver
+
+    @property
     def action_chains(self):
         """动作链对象"""
 
@@ -88,9 +97,21 @@ class AbstractBasePage(AttributeManager):
         return self._bm
 
     @property
-    def browser_index(self):
+    def index(self):
 
         return self._bm.index
+
+    def startup_winappdriver(self, executable_path, output_stream=None, auto_close_output_stream=False):
+        """启动WinAppDriver.exe"""
+
+        self.WIN_APP_DRIVER_HELPER.startup_winappdriver(executable_path, output_stream, auto_close_output_stream)
+        return self
+
+    def shutdown_winappdriver(self):
+        """关闭WinAppDriver.exe"""
+
+        self.WIN_APP_DRIVER_HELPER.shutdown_winappdriver()
+        return self
 
     def open_app(self, remote_url='http://127.0.0.1:4444/wd/hub', alias=None, desired_capabilities=None, implicit_wait_timeout=7.0, browser_profile=None, proxy=None, keep_alive=True, direct_connection=False):
 
@@ -103,6 +124,128 @@ class AbstractBasePage(AttributeManager):
                           keep_alive=keep_alive,
                           direct_connection=direct_connection)
         return self
+
+    def open_window_app(self, remote_url="http://127.0.0.1:4723", desired_capabilities={}, alias=None, window_name=None, splash_delay=0, exact_match=True, desktop_alias=None):
+        """ 创建 Windows 应用程序驱动程序会话
+
+        Args:
+            remote_url: WinAppDriver or Appium server url
+            desired_capabilities:用于创建 Windows 应用程序驱动程序会话的功能
+                app Application identifier or executable full path Microsoft.MicrosoftEdge_8wekyb3d8bbwe!MicrosoftEdge
+
+                appArguments Application launch arguments https://github.com/Microsoft/WinAppDriver
+
+                appTopLevelWindow Existing application top level window to attach to 0xB822E2
+
+                appWorkingDir 应用程序工作目录 (仅限经典应用程序) C:\\Temp
+
+                platformName Target platform name Windows
+
+                platformVersion Target platform version 1.0
+
+            alias: 为创建的应用会话设置别名
+            window_name: 要附加的窗口名称，通常在启动屏幕之后
+            exact_match: 如果窗口名称不需要完全匹配，则设置为False
+            desktop_alias: 为创建的桌面会话设置别名，将默认为“WindowDesktop”
+        """
+
+        if window_name:
+            subprocess.Popen(desired_capabilities['app'])
+            if splash_delay > 0:
+                # print('Waiting %s seconds for splash screen' % splash_delay)
+                self.sleep(splash_delay)
+            self.switch_window_app_by_name(remote_url, alias=alias, window_name=window_name, exact_match=exact_match, desktop_alias=desktop_alias, **desired_capabilities)
+        if "platformName" not in desired_capabilities:
+            desired_capabilities["platformName"] = "Windows"
+        if "forceMjsonwp" not in desired_capabilities:
+            desired_capabilities["forceMjsonwp"] = True
+
+        self._open_window_desktop(remote_url, desktop_alias)
+        self.open_app(remote_url=str(remote_url), alias=alias, desired_capabilities=desired_capabilities)
+        return self
+
+    def switch_window_app(self, index_or_alias):
+
+        self.switch_driver(index_or_alias)
+        return self
+
+    def switch_window_app_by_window_element(self, remote_url, window_element, alias=None, desktop_alias=None, **kwargs):
+
+        desired_caps = kwargs
+        window_name = window_element.get_attribute("Name")
+        if not window_name:
+            msg = 'Error connecting webdriver to window "' + window_name + '". \n'
+        else:
+            msg = 'Error connecting webdriver to window(which window element tag name is:{}). \n'.format(window_element.tag_name)
+        window = hex(int(window_element.get_attribute("NativeWindowHandle")))
+        if "app" in desired_caps:
+            del desired_caps["app"]
+        if "platformName" not in desired_caps:
+            desired_caps["platformName"] = "Windows"
+        if "forceMjsonwp" not in desired_caps:
+            desired_caps["forceMjsonwp"] = True
+        desired_caps["appTopLevelWindow"] = window
+        try:
+            self.open_app(remote_url=str(remote_url), alias=alias, desired_capabilities=desired_caps)
+        except Exception as e:
+            raise WindowNotFound(msg + str(e))
+
+    def switch_window_app_by_name(self, remote_url, window_name, alias=None, timeout=5, exact_match=True, desktop_alias=None, **kwargs):
+
+        desired_caps = kwargs
+        self._open_window_desktop(remote_url, desktop_alias)
+        window_xpath = '//Window[contains(@Name, "' + window_name + '")]'
+        window_locator = window_name
+        try:
+            if exact_match:
+                window = self.find_element_by_name(window_locator)
+            else:
+                window = self.find_element_by_xpath(window_xpath)
+            # print('Window_name "%s" found.' % window_name)
+            window = hex(int(window.get_attribute("NativeWindowHandle")))
+        except Exception:
+            try:
+                if exact_match:
+                    window = self.find_element_by_name(window_locator, timeout=timeout)
+                else:
+                    window = self.find_element_by_xpath(window_xpath, timeout=timeout)
+                # print('Window_name "%s" found.' % window_name)
+                window = hex(int(window.get_attribute("NativeWindowHandle")))
+            except Exception as e:
+                # print('Closing desktop session.')
+                raise NoSuchWindowException('Error finding window "' + window_name + '" in the desktop session. ' 'Is it a top level window handle?' + '. \n' + str(e))
+        if "app" in desired_caps:
+            del desired_caps["app"]
+        if "platformName" not in desired_caps:
+            desired_caps["platformName"] = "Windows"
+        if "forceMjsonwp" not in desired_caps:
+            desired_caps["forceMjsonwp"] = True
+        desired_caps["appTopLevelWindow"] = window
+        # global application
+        try:
+            # print('Connecting to window_name "%s".' % window_name)
+            self.open_app(remote_url=str(remote_url), alias=alias, desired_capabilities=desired_caps)
+        except Exception as e:
+            raise WindowNotFound('Error connecting webdriver to window "' + window_name + '". \n' + str(e))
+        return self
+
+    def get_sub_windows_of_desktop(self, remote_url, desktop_alias_or_index=None):
+
+        self._open_window_desktop(remote_url, desktop_alias_or_index)
+        el_wins = self.find_elements_by_xpath("//Window[@Name]", timeout=5)
+        return el_wins
+
+    def _open_window_desktop(self, remote_url, alias=None):
+        """打开window桌面会话"""
+
+        if not alias:
+            alias = self.DESKTOP_ALIAS
+        try:
+            self.switch_driver(alias)
+        except RuntimeError:
+            desktop_capabilities = dict({"app": "Root", "platformName": "Windows", "deviceName": "Windows", "alias": alias, "newCommandTimeout": 3600, "forceMjsonwp": True})
+            self.open_app(remote_url=str(remote_url), alias=alias, desired_capabilities=desktop_capabilities)
+        return self.index
 
     def close_driver(self):
         self._bm.close_driver()
@@ -500,7 +643,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: `MobileWebElement`
         """
-        return self.find_element(by=MobileBy.IOS_UIAUTOMATION, value=uia_string, timeout=timeout, parent=None)
+        return self.find_element(by=MobileBy.IOS_UIAUTOMATION, locator=uia_string, timeout=timeout, parent=None)
 
     def find_elements_by_ios_uiautomation(self, uia_string, timeout=None):
         """Finds elements by uiautomation in iOS.
@@ -516,7 +659,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: list of `MobileWebElement`
         """
-        return self.find_elements(by=MobileBy.IOS_UIAUTOMATION, value=uia_string, timeout=timeout, parent=None)
+        return self.find_elements(by=MobileBy.IOS_UIAUTOMATION, locator=uia_string, timeout=timeout, parent=None)
 
     def find_element_by_ios_predicate(self, predicate_string, timeout=None):
         """Find an element by ios predicate string.
@@ -532,7 +675,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: `MobileWebElement`
         """
-        return self.find_element(by=MobileBy.IOS_PREDICATE, value=predicate_string, timeout=timeout, parent=None)
+        return self.find_element(by=MobileBy.IOS_PREDICATE, locator=predicate_string, timeout=timeout, parent=None)
 
     def find_elements_by_ios_predicate(self, predicate_string, timeout=None):
         """Finds elements by ios predicate string.
@@ -548,7 +691,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: list of `MobileWebElement`
         """
-        return self.find_elements(by=MobileBy.IOS_PREDICATE, value=predicate_string, timeout=timeout, parent=None)
+        return self.find_elements(by=MobileBy.IOS_PREDICATE, locator=predicate_string, timeout=timeout, parent=None)
 
     def find_element_by_ios_class_chain(self, class_chain_string, timeout=None):
         """Find an element by ios class chain string.
@@ -564,7 +707,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: `MobileWebElement`
         """
-        return self.find_element(by=MobileBy.IOS_CLASS_CHAIN, value=class_chain_string, timeout=timeout, parent=None)
+        return self.find_element(by=MobileBy.IOS_CLASS_CHAIN, locator=class_chain_string, timeout=timeout, parent=None)
 
     def find_elements_by_ios_class_chain(self, class_chain_string, timeout=None):
         """Finds elements by ios class chain string.
@@ -580,7 +723,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: list of `MobileWebElement`
         """
-        return self.find_elements(by=MobileBy.IOS_CLASS_CHAIN, value=class_chain_string, timeout=timeout, parent=None)
+        return self.find_elements(by=MobileBy.IOS_CLASS_CHAIN, locator=class_chain_string, timeout=timeout, parent=None)
 
     def find_element_by_android_uiautomator(self, uia_string, timeout=None):
 
@@ -606,7 +749,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: `MobileWebElement`
         """
-        return self.find_element(by=MobileBy.ANDROID_VIEWTAG, value=tag, timeout=timeout, parent=None)
+        return self.find_element(by=MobileBy.ANDROID_VIEWTAG, locator=tag, timeout=timeout, parent=None)
 
     def find_elements_by_android_viewtag(self, tag, timeout=None):
         """Finds element by [View#tags](https://developer.android.com/reference/android/view/View#tags) in Android.
@@ -624,7 +767,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: list of `MobileWebElement`
         """
-        return self.find_elements(by=MobileBy.ANDROID_VIEWTAG, value=tag, timeout=timeout, parent=None)
+        return self.find_elements(by=MobileBy.ANDROID_VIEWTAG, locator=tag, timeout=timeout, parent=None)
 
     def find_element_by_image(self, img_path, timeout=None):
         """Finds a portion of a screenshot by an image.
@@ -642,7 +785,7 @@ class AbstractBasePage(AttributeManager):
         with open(img_path, 'rb') as i_file:
             b64_data = base64.b64encode(i_file.read()).decode('UTF-8')
 
-        return self.find_element(by=MobileBy.IMAGE, value=b64_data, timeout=timeout, parent=None)
+        return self.find_element(by=MobileBy.IMAGE, locator=b64_data, timeout=timeout, parent=None)
 
     def find_elements_by_image(self, img_path, timeout=None):
         """Finds a portion of a screenshot by an image.
@@ -661,7 +804,7 @@ class AbstractBasePage(AttributeManager):
         with open(img_path, 'rb') as i_file:
             b64_data = base64.b64encode(i_file.read()).decode('UTF-8')
 
-        return self.find_elements(by=MobileBy.IMAGE, value=b64_data, timeout=timeout, parent=None)
+        return self.find_elements(by=MobileBy.IMAGE, locator=b64_data, timeout=timeout, parent=None)
 
     def find_element_by_accessibility_id(self, accessibility_id, timeout=None):
         """Finds an element by accessibility id.
@@ -678,7 +821,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: `MobileWebElement`
         """
-        return self.find_element(by=MobileBy.ACCESSIBILITY_ID, value=accessibility_id, timeout=timeout, parent=None)
+        return self.find_element(by=MobileBy.ACCESSIBILITY_ID, locator=accessibility_id, timeout=timeout, parent=None)
 
     def find_elements_by_accessibility_id(self, accessibility_id, timeout=None):
         """Finds elements by accessibility id.
@@ -695,7 +838,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: list of `MobileWebElement`
         """
-        return self.find_elements(by=MobileBy.ACCESSIBILITY_ID, value=accessibility_id, timeout=timeout, parent=None)
+        return self.find_elements(by=MobileBy.ACCESSIBILITY_ID, locator=accessibility_id, timeout=timeout, parent=None)
 
     def find_element_by_custom(self, selector, timeout=None):
         """Finds an element in conjunction with a custom element finding plugin
@@ -714,7 +857,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: `MobileWebElement`
         """
-        return self.find_element(by=MobileBy.CUSTOM, value=selector, timeout=timeout, parent=None)
+        return self.find_element(by=MobileBy.CUSTOM, locator=selector, timeout=timeout, parent=None)
 
     def find_elements_by_custom(self, selector, timeout=None):
         """Finds elements in conjunction with a custom element finding plugin
@@ -733,7 +876,7 @@ class AbstractBasePage(AttributeManager):
 
         :rtype: list of `MobileWebElement`
         """
-        return self.find_elements(by=MobileBy.CUSTOM, value=selector, timeout=timeout, parent=None)
+        return self.find_elements(by=MobileBy.CUSTOM, locator=selector, timeout=timeout, parent=None)
 
     def sleep(self, seconds):
         """seconds the length of time to sleep in seconds"""
@@ -751,8 +894,10 @@ class AbstractBasePage(AttributeManager):
             raise TimeoutException(message)
 
     @staticmethod
-    def wait_until(condition, message="", timeout=None, poll_frequency=0.2, ignored_exceptions=None):
+    def wait_until(callable_method, message="", timeout=None, poll_frequency=0.2, ignored_exceptions=None):
 
+        if timeout is None:
+            timeout = 0.0
         exceptions = [NoSuchElementException]
         if ignored_exceptions is not None:
             try:
@@ -762,14 +907,16 @@ class AbstractBasePage(AttributeManager):
         _ignored_exceptions = tuple(exceptions)
         end_time = time.time() + timeout
         not_found = None
-        while time.time() < end_time:
+        while True:
             try:
-                if condition():
+                if callable_method():
                     return
             except _ignored_exceptions as err:
                 not_found = str(err)
             else:
                 not_found = None
+            if time.time() > end_time:
+                break
             time.sleep(poll_frequency)
         raise TimeoutException(not_found or message)
 
@@ -926,46 +1073,69 @@ class AbstractBasePage(AttributeManager):
 
     def _get_window_infos_map(self, handle):
 
-        infos = {"handle": handle, "name": self.execute_script("return window.name;"), "title": self._bm.browser.title, "url": self._bm.browser.current_url}
+        title = self.driver.title
+        try:
+            name = self.execute_script("return window.name;")
+        except Exception:
+            name = title
+        try:
+            current_url = self._bm.browser.current_url
+        except Exception:
+            current_url = None
+
+        infos = {"handle": handle, "name": name, "title": title, "url": current_url}
         return infos
 
-    def switch_window_by_title(self, title, matcher=None):
+    def switch_window_by_title(self, title, matcher=None, timeout=None):
         """根据标题切换窗口
 
-        @param matcher 匹配函数，接收两个参数，遍历传入每一个窗口的标题给第一个参数，要打开的窗口标题传给第二个参数，匹配返回True否则返回False
+        Args:
+            title: 窗口标题
+            matcher: 匹配函数，接收两个参数，遍历传入每一个窗口的标题给第一个参数，要打开的窗口标题传给第二个参数，匹配返回True否则返回False
+            timeout: 超时时间
         """
-        for wimap in self.window_infos_maps:
-            m_title = wimap["title"]
-            m_handle = wimap["handle"]
-            if inspect.isfunction(matcher):
-                if matcher(m_title, title):
-                    self.switch_window(m_handle)
-                    return
-            else:
-                if m_title == title:
-                    self.switch_window(m_handle)
-                    return
-        message = "No window matching title(%s)" % title
-        raise WindowNotFound(message)
+        def _switch_window_by_title():
+            be_found = False
+            for win_handle in self.window_handles:
+                self.switch_window(win_handle)
+                info = self._get_window_infos_map(win_handle)
+                if inspect.isfunction(matcher):
+                    if matcher(info["title"], title):
+                        be_found = True
+                        break
+                else:
+                    if info["title"] == title:
+                        be_found = True
+                        break
+            return be_found
 
-    def switch_window_by_url(self, url, matcher=None):
+        message = "No window matching title(%s)" % title
+        self.wait_until(_switch_window_by_title, message=message, timeout=timeout)
+        return self
+
+    def switch_window_by_url(self, url, matcher=None, timeout=None):
         """根据url切换窗口
 
         @see select_window_by_url(self, url, matcher=None)
         """
-        for wimap in self.window_infos_maps:
-            m_url = wimap["url"]
-            m_handle = wimap["handle"]
-            if inspect.isfunction(matcher):
-                if matcher(m_url, url):
-                    self.switch_window(m_handle)
-                    return
-            else:
-                if m_url == url:
-                    self.switch_window(m_handle)
-                    return
+        def _switch_window_by_url():
+            be_found = False
+            for win_handle in self.window_handles:
+                self.switch_window(win_handle)
+                info = self._get_window_infos_map(win_handle)
+                if inspect.isfunction(matcher):
+                    if matcher(info["url"], url):
+                        be_found = True
+                        break
+                else:
+                    if info["url"] == url:
+                        be_found = True
+                        break
+            return be_found
+
         message = "No window matching url(%s)" % url
-        raise WindowNotFound(message)
+        self.wait_until(_switch_window_by_url, message=message, timeout=timeout)
+        return self
 
     def set_window_size(self, width, height, window_handle='current'):
         """Sets current windows size to given ``width`` and ``height``

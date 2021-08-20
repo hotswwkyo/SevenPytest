@@ -84,8 +84,11 @@ class ScreenshotCapturer(AttributeManager):
 
     def screenshot_as_base64(self):
 
-        if self.driver:
-            return self.driver.get_screenshot_as_base64()
+        try:
+            if self.driver:
+                return self.driver.get_screenshot_as_base64()
+        except Exception as e:
+            print(e)
         img = pyautogui.screenshot()
         temp = io.BytesIO()
         try:

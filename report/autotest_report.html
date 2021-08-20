@@ -5,7 +5,7 @@
     <title>Test Report</title>
     <style>body {
 	font-family: Helvetica, Arial, sans-serif;
-	font-size: 12px;
+	font-size: 14px;
 	/* do not increase min-width as some may use split screens */
 	min-width: 800px;
 	color: #999;
@@ -76,7 +76,7 @@ span.error, span.failed, span.xpassed, .error .col-result, .failed .col-result, 
 #results-table {
 	border: 1px solid #e6e6e6;
 	color: #999;
-	font-size: 12px;
+	font-size: 14px;
 	width: 100%
 }
 
@@ -404,91 +404,36 @@ function filter_table(elem) {
     not_found_message.hidden = !all_rows_hidden;
 }
 </script>
-    <h1>autotest_report.html</h1>
-    <p>Report generated on 17-Apr-2020 at 17:58:40 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v2.0.1</p>
+    <h1>yuyan_autotest_report.html</h1>
+    <p>Report generated on 20-Aug-2021 at 13:20:36 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v2.0.1</p>
     <h2>Environment</h2>
-    <table id="environment">
-      <tr>
-        <td>JAVA_HOME</td>
-        <td>C:\Program Files\Java\jdk1.8.0_151</td></tr>
-      <tr>
-        <td>Packages</td>
-        <td>{&apos;pytest&apos;: &apos;5.3.1&apos;, &apos;py&apos;: &apos;1.8.0&apos;, &apos;pluggy&apos;: &apos;0.13.1&apos;}</td></tr>
-      <tr>
-        <td>Platform</td>
-        <td>Windows-10-10.0.18362-SP0</td></tr>
-      <tr>
-        <td>Plugins</td>
-        <td>{&apos;html&apos;: &apos;2.0.1&apos;, &apos;metadata&apos;: &apos;1.8.0&apos;}</td></tr>
-      <tr>
-        <td>Python</td>
-        <td>3.8.0</td></tr></table>
+    <table id="environment"></table>
     <h2>Summary</h2>
-    <p>2 tests ran in 0.48 seconds. </p>
-    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="passed">2 passed</span>, <input checked="true" class="filter" data-test-result="skipped" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="skipped">2 skipped</span>, <input checked="true" class="filter" data-test-result="failed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="failed">0 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <p>日期: 2021-08-20 13:20:36</p>
+    <p>执行了1个测试用例，整个测试耗时：23.58秒。</p>
+    <p class="filter" hidden="true">(取消)勾选复选框，筛选显示测试结果。</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="passed">1 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="failed">0 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
     <h2>Results</h2>
     <table id="results-table">
       <thead id="results-table-head">
         <tr>
-          <th class="sortable result initial-sort" col="result">Result</th>
-          <th>Description</th>
-          <th>TestData</th>
-          <th class="sortable time" col="time">Time</th>
-          <th>Author</th>
-          <th>Editor</th>
-          <th class="sortable" col="name">Test</th>
-          <th class="sortable numeric" col="duration">Duration</th></tr>
+          <th style="width:30%;">用例名称</th>
+          <th style="width:36%;">用例数据</th>
+          <th style="width:5%;">编写人</th>
+          <th style="width:5%;">修改人</th>
+          <th class="sortable result initial-sort" col="result" style="width:10%;">测试结果</th>
+          <th class="sortable" col="name" style="width: 10%;">用例方法</th>
+          <th class="sortable numeric" col="duration" style="width:6%;">耗时</th></tr>
         <tr hidden="true" id="not-found-message">
-          <th colspan="8">No results found. Try to check the filters</th></tr></thead>
-      <tbody class="skipped results-table-row">
-        <tr>
-          <td class="col-result">Skipped</td>
-          <td>成功登陆测试</td>
-          <td></td>
-          <td class="col-time">2020-04-17 09:58:40.383283</td>
-          <td>siwenwei</td>
-          <td></td>
-          <td class="col-name">sevenautotest/testcases/LoginPageTest.py::LoginPageTest::test_successfully_login[testdata0]::setup</td>
-          <td class="col-duration">0.00</td></tr>
-        <tr>
-          <td class="extra" colspan="8">
-            <div class="log">(&#x27;sevenautotest\\testcases\\LoginPageTest.py&#x27;, 22, &#x27;Skipped: 跳过&#x27;)<br/></div></td></tr></tbody>
-      <tbody class="skipped results-table-row">
-        <tr>
-          <td class="col-result">Skipped</td>
-          <td>查询影院信息测试</td>
-          <td></td>
-          <td class="col-time">2020-04-17 09:58:40.642513</td>
-          <td>siwenwei</td>
-          <td></td>
-          <td class="col-name">sevenautotest/testcases/TmsServerApiTest.py::TmsServerApiTest::test_check_threate_info[testdata0]::setup</td>
-          <td class="col-duration">0.00</td></tr>
-        <tr>
-          <td class="extra" colspan="8">
-            <div class="log">(&#x27;sevenautotest\\testcases\\TmsServerApiTest.py&#x27;, 23, &#x27;Skipped: 跳过&#x27;)<br/></div></td></tr></tbody>
+          <th colspan="7">No results found. Try to check the filters</th></tr></thead>
       <tbody class="passed results-table-row">
         <tr>
-          <td class="col-result">Passed</td>
-          <td>查询歌曲详情测试</td>
-          <td>{&quot;testdata&quot;: {&quot;歌曲id&quot;: &quot;28377211&quot;, &quot;预期歌曲名称&quot;: &quot;Moon Without The Stars&quot;}}</td>
-          <td class="col-time">2020-04-17 09:58:40.480972</td>
+          <td>使用正确密码连接远程电脑桌面</td>
+          <td>{&quot;testdata&quot;: {&quot;远程桌面登录账户&quot;: &quot;10.201.15.253&quot;, &quot;远程桌面登录密码&quot;: &quot;123456&quot;}}</td>
           <td>siwenwei</td>
           <td></td>
-          <td class="col-name">sevenautotest/testcases/NeteaseCloudMusicApiTest.py::NeteaseCloudMusicApiTest::test_check_song_detail[testdata0]</td>
-          <td class="col-duration">0.09</td></tr>
-        <tr>
-          <td class="extra" colspan="8">
-            <div class="empty log">No log output captured.</div></td></tr></tbody>
-      <tbody class="passed results-table-row">
-        <tr>
           <td class="col-result">Passed</td>
-          <td>查询歌手专辑测试</td>
-          <td>{&quot;testdata&quot;: {&quot;歌手id&quot;: &quot;166009&quot;, &quot;offset&quot;: &quot;0&quot;, &quot;total&quot;: &quot;true&quot;, &quot;limit&quot;: &quot;5&quot;, &quot;封面艺人名&quot;: &quot;吴莫愁&quot;}}</td>
-          <td class="col-time">2020-04-17 09:58:40.638523</td>
-          <td>siwenwei</td>
-          <td></td>
-          <td class="col-name">sevenautotest/testcases/NeteaseCloudMusicApiTest.py::NeteaseCloudMusicApiTest::test_get_singer_album[testdata0]</td>
-          <td class="col-duration">0.15</td></tr>
+          <td class="col-name" style="text-align: center;font-weight: bold;" title="sevenautotest/testcases/vncviewer_page_test.py::VNCViewerPageTest::connect_remote_pc_desktop[testdata0]">...</td>
+          <td class="col-duration">22.31</td></tr>
         <tr>
-          <td class="extra" colspan="8">
+          <td class="extra" colspan="7">
             <div class="empty log">No log output captured.</div></td></tr></tbody></table></body></html>
