@@ -203,14 +203,25 @@ def pytest_pycollect_makeitem(collector, name, obj):
     # return list(collector._genfunctions(name, obj))
 
 
+def enable_of_testcase_marker(testcase_markers):
+
+    run_testcase_key = "enable"
+    enable = False
+    for m in testcase_markers:
+        enable = m.kwargs.get(run_testcase_key, True)
+        if enable:
+            break
+    return enable
+
+
 def pytest_collection_modifyitems(session, config, items):
 
     new_items = []
     for item in items:
-        if len(list(item.iter_markers(settings.TESTCASE_MARKER_NAME))):
+        markers = list(item.iter_markers(settings.TESTCASE_MARKER_NAME))
+        if len(markers) and enable_of_testcase_marker(markers):
             new_items.append(item)
-            break
-    items = new_items
+    items[:] = new_items
 
 
 def pytest_generate_tests(metafunc):
