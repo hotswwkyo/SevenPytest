@@ -205,15 +205,71 @@ def pytest_pycollect_makeitem(collector, name, obj):
 
 def enable_of_testcase_marker(testcase_markers):
 
-    run_testcase_key = "enable"
+    key = "enable"
     enable = False
     for m in testcase_markers:
-        enable = m.kwargs.get(run_testcase_key, True)
-        if enable:
+        enable = m.kwargs.get(key, None)
+        if enable is not None:
             break
+    if enable is None:
+        enable = True
     return enable
 
 
+def get_group_name_from_nodeid(nodeid):
+    sep = "::"
+    parts = nodeid.split(sep)
+    group_name = sep.join(parts[0:len(parts) - 1])
+    return group_name
+
+
+def priority_of_testcase_marker(testcase):
+
+    key = "priority"
+    markers = list(testcase.iter_markers(settings.TESTCASE_MARKER_NAME))
+    priority = None  # 表示没有设置该priority参数
+    for m in markers:
+        priority = m.kwargs.get(key, None)
+        if priority is not None:
+            break
+    return priority
+
+
+def sorted_by_priority(testcases):
+    """根据priority（优先级）对用例进行排序，如果没有设置priority，则不会对该用例进行排序，它的执行顺序不变"""
+
+    groupnames = []
+    for testcase in testcases:
+        gname = get_group_name_from_nodeid(testcase.nodeid)
+        if gname not in groupnames:
+            groupnames.append(gname)
+
+    groups = {}
+    for gn in groupnames:
+        group = []
+        for i, tc in enumerate(testcases):
+            if gn == get_group_name_from_nodeid(tc.nodeid) and priority_of_testcase_marker(tc) is not None:
+                group.append((i, tc))
+
+        group.sort(key=lambda x: x[0])  # 按照其在原用例列表中的位置进行排序
+        new_group = sorted(group, key=lambda x: priority_of_testcase_marker(x[1]))  # 返回按照优先级进行排序的新列表
+
+        itemlist = []
+        for index, item in enumerate(new_group):
+            new_index = group[index][0]  # 当前用例新的索引位置
+            old_index = item[0]  # 当前用例原来的索引位置
+            current_testcase = item[1]  # 当前用例
+            itemlist.append((new_index, old_index, current_testcase))
+        groups[gn] = itemlist
+
+    for items in groups.values():
+        for item in items:
+            new_index = item[0]
+            thiscase = item[2]
+            testcases[new_index] = thiscase
+
+
+@pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(session, config, items):
 
     new_items = []
@@ -221,6 +277,7 @@ def pytest_collection_modifyitems(session, config, items):
         markers = list(item.iter_markers(settings.TESTCASE_MARKER_NAME))
         if len(markers) and enable_of_testcase_marker(markers):
             new_items.append(item)
+    sorted_by_priority(new_items)
     items[:] = new_items
 
 
