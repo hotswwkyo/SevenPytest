@@ -33,7 +33,7 @@ def pytest_html_results_table_header(cells):
     # cells.insert(2, html.th('执行时间', class_='sortable time', col='time'))
     cells.insert(2, html.th('编写人', style="width:5%;"))
     cells.insert(3, html.th('修改人', style="width:5%;"))
-    # cells.insert(1,html.th("Test_nodeid"))
+    cells.insert(4, html.th("开始时间"))
     cells.pop()
     change_opts = {
         "Test": {
@@ -92,14 +92,20 @@ def pytest_html_results_table_row(report, cells):
     # cells.insert(2, html.td(datetime.now(), class_='col-time'))
     cells.insert(2, html.td(report.author if hasattr(report, "author") else ""))
     cells.insert(3, html.td(report.editor if hasattr(report, "editor") else ""))
-    # cells.insert(1,html.td(report.nodeid))
+    cells.insert(4, html.td(report.testcase_exec_start_time))
     cells.pop()
+    method_names = [report.nodeid]
+    whenlist = ['setup', 'call', 'teardown']
+    for when in whenlist:
+        suffix = "::" + when
+        if not report.nodeid.endswith(suffix):
+            method_names.append(report.nodeid + suffix)
     for cell in cells:
         value = cell[0] if cell else ""
-        if value == report.nodeid:
+        if value in method_names:
             # cell[0] = report.nodeid.split("::")[-1]
             cell[0] = "..."
-            cell.attr.__dict__.update(dict(title=report.nodeid, style="text-align: center;font-weight: bold;"))
+            cell.attr.__dict__.update(dict(title=value, style="text-align: center;font-weight: bold;"))
 
 
 @pytest.mark.hookwrapper
@@ -149,6 +155,7 @@ def pytest_runtest_makereport(item, call):
     for marker in item.iter_markers(settings.TESTCASE_MARKER_NAME):
         for k, v in marker.kwargs.items():
             setattr(report, k, v)
+    report.testcase_exec_start_time = getattr(item, "testcase_exec_start_time", "")
 
 
 def pytest_configure(config):
@@ -279,6 +286,11 @@ def pytest_collection_modifyitems(session, config, items):
             new_items.append(item)
     sorted_by_priority(new_items)
     items[:] = new_items
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_call(item):
+    item.testcase_exec_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 
 def pytest_generate_tests(metafunc):
