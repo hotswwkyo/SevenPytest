@@ -87,11 +87,11 @@ def pytest_html_results_summary(prefix, summary, postfix):
 @pytest.mark.optionalhook
 def pytest_html_results_table_row(report, cells):
 
-    cells.insert(0, html.td(report.description if hasattr(report, "description") else ""))
-    cells.insert(1, html.td(report.testdata if hasattr(report, "testdata") else ""))
+    cells.insert(0, html.td(getattr(report, "description", "")))
+    cells.insert(1, html.td(getattr(report, "testdata", "")))
     # cells.insert(2, html.td(datetime.now(), class_='col-time'))
-    cells.insert(2, html.td(report.author if hasattr(report, "author") else ""))
-    cells.insert(3, html.td(report.editor if hasattr(report, "editor") else ""))
+    cells.insert(2, html.td(getattr(report, "author", "")))
+    cells.insert(3, html.td(getattr(report, "editor", "")))
     cells.insert(4, html.td(getattr(report, "testcase_exec_start_time", "")))
     cells.pop()
     method_names = [report.nodeid]
@@ -117,13 +117,20 @@ def pytest_runtest_makereport(item, call):
     report.description = item.function.__doc__ if item.function.__doc__ else item.function.__name__
     extra = getattr(report, 'extra', [])
 
+    # fill testdata
+    args = {}
+    for argname in item._fixtureinfo.argnames:
+        args[argname] = item.funcargs[argname]
+    setattr(report, "testdata", json.dumps(args, ensure_ascii=False))
+
     if report.when == "call":  # 测试用例失败自动截图
 
+        # comment the follow code at 2021-08-26 by siwenwei
         # fill testdata
-        args = {}
-        for argname in item._fixtureinfo.argnames:
-            args[argname] = item.funcargs[argname]
-        setattr(report, "testdata", json.dumps(args, ensure_ascii=False))
+        # args = {}
+        # for argname in item._fixtureinfo.argnames:
+        #     args[argname] = item.funcargs[argname]
+        # setattr(report, "testdata", json.dumps(args, ensure_ascii=False))
 
         xfail = hasattr(report, "wasxfail")
         if (report.skipped and xfail) or (report.failed and not xfail):
@@ -164,7 +171,6 @@ def pytest_configure(config):
     config.addinivalue_line("testpaths", settings.TESTCASES_DIR)
 
     config.addinivalue_line("python_files", "*.py")
-    # config.addinivalue_line("junit_family", "legacy")
     config.addinivalue_line("filterwarnings", "ignore::UserWarning")
 
     opts = ["JAVA_HOME", "Packages", "Platform", "Plugins", "Python"]
