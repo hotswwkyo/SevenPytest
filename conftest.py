@@ -92,7 +92,7 @@ def pytest_html_results_table_row(report, cells):
     # cells.insert(2, html.td(datetime.now(), class_='col-time'))
     cells.insert(2, html.td(report.author if hasattr(report, "author") else ""))
     cells.insert(3, html.td(report.editor if hasattr(report, "editor") else ""))
-    cells.insert(4, html.td(report.testcase_exec_start_time))
+    cells.insert(4, html.td(getattr(report, "testcase_exec_start_time", "")))
     cells.pop()
     method_names = [report.nodeid]
     whenlist = ['setup', 'call', 'teardown']
@@ -164,6 +164,7 @@ def pytest_configure(config):
     config.addinivalue_line("testpaths", settings.TESTCASES_DIR)
 
     config.addinivalue_line("python_files", "*.py")
+    # config.addinivalue_line("junit_family", "legacy")
     config.addinivalue_line("filterwarnings", "ignore::UserWarning")
 
     opts = ["JAVA_HOME", "Packages", "Platform", "Plugins", "Python"]
@@ -196,7 +197,10 @@ def pytest_pycollect_makeitem(collector, name, obj):
 
     if safe_isclass(obj):
         if collector.istestclass(obj, name) or (issubclass(obj, AbstractTestCase) and obj != AbstractTestCase):
-            return pytest.Class(name, parent=collector)
+            if hasattr(pytest.Class, "from_parent"):
+                return pytest.Class.from_parent(collector, name=name)
+            else:
+                return pytest.Class(name, parent=collector)
     else:
         obj = getattr(obj, "__func__", obj)
         if (inspect.isfunction(obj) or inspect.isfunction(get_real_func(obj))) and getattr(obj, "__test__", True) and isinstance(collector, pytest.Instance) and hasattr(obj, "pytestmark"):
