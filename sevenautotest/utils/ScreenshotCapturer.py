@@ -3,7 +3,7 @@
 import io
 import os
 import base64
-import pyautogui
+from PIL import ImageGrab
 from sevenautotest import settings
 from sevenautotest.utils.marker import ConstAttributeMarker
 from sevenautotest.utils.AttributeManager import AttributeManager
@@ -35,22 +35,30 @@ class ScreenshotCapturer(AttributeManager):
         return self
 
     @classmethod
-    def pyautogui_screenshot(cls, file_full_path):
+    def screen_capture(cls, filename=None, region=None):
+        """
+        截屏返回PIL.Image对象
 
-        img = pyautogui.screenshot()
-        try:
-            img.save(file_full_path, "png")
-        except ValueError:
-            return False
-        except IOError:
-            return False
-        finally:
-            del img
-        return True
+        Args:
+         - filename: 保存截图文件的完整路径名，省略则不保存
+         - region: 4整型数据构成的元祖 第1、2为起点坐标，第3、4位长宽，省略则截全屏
+
+        Usage:
+            ScreenshotCapturer.screen_capture('/screenshots/st.png')
+        """
+
+        im = ImageGrab.grab()
+        if region is not None:
+            assert len(region) == 4, 'region argument must be a tuple of four ints'
+            region = [int(x) for x in region]
+            im = im.crop((region[0], region[1], region[2] + region[0], region[3] + region[1]))
+        if filename is not None:
+            im.save(filename)
+        return im
 
     def _pil_screenshot(self, file_full_path):
 
-        img = pyautogui.screenshot()
+        img = self.screen_capture()
         try:
             img.save(file_full_path, "png")
         except ValueError:
@@ -89,7 +97,7 @@ class ScreenshotCapturer(AttributeManager):
                 return self.driver.get_screenshot_as_base64()
         except Exception as e:
             print(e)
-        img = pyautogui.screenshot()
+        img = self.screen_capture()
         temp = io.BytesIO()
         try:
             img.save(temp, "png")
