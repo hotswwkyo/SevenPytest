@@ -12,7 +12,7 @@ import inspect
 from datetime import datetime
 
 import pytest
-from py.xml import html
+from py.xml import html, raw
 # from _pytest.compat import getimfunc
 from _pytest.compat import safe_isclass
 from _pytest.compat import is_generator
@@ -66,6 +66,9 @@ def pytest_html_results_table_header(cells):
 
 @pytest.mark.optionalhook
 def pytest_html_results_summary(prefix, summary, postfix):
+
+    style_css = 'table tr:hover {background-color: #f0f8ff;}'
+    prefix.extend([html.style(raw(style_css))])
     prefix.extend([html.p("日期: {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))])
     for item in summary:
         if not item:
@@ -100,12 +103,13 @@ def pytest_html_results_table_row(report, cells):
         suffix = "::" + when
         if not report.nodeid.endswith(suffix):
             method_names.append(report.nodeid + suffix)
+    copy_to_clipboard = "var transfer = document.createElement('input');document.body.appendChild(transfer);transfer.value = this.title;transfer.focus();transfer.select();if (document.execCommand('copy')) {document.execCommand('copy');};transfer.blur();document.body.removeChild(transfer);"
     for cell in cells:
         value = cell[0] if cell else ""
         if value in method_names:
             # cell[0] = report.nodeid.split("::")[-1]
             cell[0] = "..."
-            cell.attr.__dict__.update(dict(title=value, style="text-align: center;font-weight: bold;"))
+            cell.attr.__dict__.update(dict(title=value, style="text-align: center;font-weight: bold;", onclick=copy_to_clipboard))
 
 
 @pytest.mark.hookwrapper
