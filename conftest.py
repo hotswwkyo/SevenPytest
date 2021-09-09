@@ -103,7 +103,7 @@ def pytest_html_results_table_row(report, cells):
         suffix = "::" + when
         if not report.nodeid.endswith(suffix):
             method_names.append(report.nodeid + suffix)
-    copy_to_clipboard = "var transfer = document.createElement('input');document.body.appendChild(transfer);transfer.value = this.title;transfer.focus();transfer.select();if (document.execCommand('copy')) {document.execCommand('copy');};transfer.blur();document.body.removeChild(transfer);"
+    copy_to_clipboard = "var transfer = document.createElement('input');this.appendChild(transfer);transfer.value = this.title;transfer.focus();transfer.select();if (document.execCommand('copy')) {document.execCommand('copy');};transfer.blur();this.removeChild(transfer);"
     for cell in cells:
         value = cell[0] if cell else ""
         if value in method_names:
