@@ -10,6 +10,7 @@ import os
 import json
 import inspect
 from datetime import datetime
+from sevenautotest.utils import helper
 
 import pytest
 from py.xml import html, raw
@@ -41,7 +42,7 @@ def pytest_html_results_table_header(cells):
             "style": "width: 10%;"
         },
         "Duration": {
-            "text": "耗时",
+            "text": "耗时(秒)",
             "style": "width:6%;"
         },
         "Result": {
@@ -84,7 +85,11 @@ def pytest_html_results_summary(prefix, summary, postfix):
             except IndexError:
                 pass
             else:
-                item[0] = "执行了{}个测试用例，整个测试耗时：{}秒。".format(total, seconds)
+                try:
+                    seconds = helper.SevenTimeDelta(seconds=float(seconds)).human_readable()
+                except Exception:
+                    pass
+                item[0] = "执行了{}个测试用例，整个测试耗时：{}".format(total, seconds)
 
 
 @pytest.mark.optionalhook

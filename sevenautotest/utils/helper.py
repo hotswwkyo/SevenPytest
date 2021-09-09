@@ -6,10 +6,10 @@ import os
 import re
 import json
 import inspect
-import tkinter
 import smtplib
+import datetime
 import functools
-import tkinter.simpledialog
+
 import collections.abc as collections
 from functools import cmp_to_key
 from email.header import Header
@@ -55,11 +55,13 @@ def is_blank_space(value):
 def group_by_suffix_regex(string_key_dict, suffix_regex, is_remove_suffix=True, cmp=None):
     """根据键名正则表达式对字典进行分组和排序
 
-    @param string_key_dict 键名是字符串的字典
-    @param suffix_regex 键名正则表达式
-    @param is_remove_suffix 是否移除匹配的后缀
-    @param cmp 如果是函数，会往cmp传入匹配的后缀，函数要求同sorted方法的cmp参数说明，如果是为True则按照匹配的后缀排序，False则不排序
-    @return 返回分组后组构成的列表，每个组是一个字典 [group, group, ...]
+    Args:
+        - string_key_dict 键名是字符串的字典
+        - suffix_regex 键名正则表达式
+        - is_remove_suffix 是否移除匹配的后缀
+        - cmp 如果是函数，会往cmp传入匹配的后缀，函数要求同sorted方法的cmp参数说明，如果是为True则按照匹配的后缀排序，False则不排序
+
+    Returns: 返回分组后组构成的列表，每个组是一个字典 [group, group, ...]
     """
 
     regex = "(.)*" + "(" + suffix_regex + ")"
@@ -180,7 +182,8 @@ def prompt(title="", tips="", encoding="utf-8"):
     @param title 对话框标题
     @param tips 要在对话框中显示的文本
     """
-
+    import tkinter
+    import tkinter.simpledialog
     root = tkinter.Tk()
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight() - 100  # under windows, taskbar may lie under the screen
@@ -431,3 +434,19 @@ def get_caller_name():
     """获取直接调用该函数的函数或方法名"""
 
     return inspect.stack()[1][3]
+
+
+class SevenTimeDelta(datetime.timedelta):
+    def human_readable(self, lang="cn"):
+
+        if lang == "cn":
+            mm, ss = divmod(self.seconds, 60)
+            hh, mm = divmod(mm, 60)
+            s = "%d:%02d:%02d" % (hh, mm, ss)
+            if self.days:
+                s = ("%d 天, " % self.days) + s
+            if self.microseconds:
+                s = s + ".%06d" % self.microseconds
+        else:
+            s = str(self)
+        return s
