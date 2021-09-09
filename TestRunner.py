@@ -6,6 +6,7 @@
 __version__ = "1.0"
 __author__ = "si wen wei"
 
+import sys
 import pytest
 from sevenautotest import settings
 
@@ -29,4 +30,8 @@ class TestRunner(object):
 
 if __name__ == "__main__":
 
-    TestRunner().run(settings.PYTEST_COMMANDS)
+    if getattr(settings, "DEBUG", True):
+        cmds = settings.PYTEST_COMMANDS
+    else:
+        cmds = sys.argv[1:]
+    TestRunner().run(cmds)
