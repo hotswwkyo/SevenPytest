@@ -1,5 +1,5 @@
 # SevenPytest
-基于pytest实现，参考testng，定制测试用例收集方案和自定义参数化方案，使用pytest-html插件定制化html测试报告，采用test object设计模式，以及引入链式编程，语义清晰。自定义设计了测试用例数据以及页面元素定位数据存储方案。
+基于pytest实现测试用例收集方案、自定义参数化方案、页面元素定位数据存储方案、测试用例数据存储和维护方案，这样可直接进入到设计编写测试用例业务代码阶段，避免重复设计这些方案以及方案不统一导致维护复杂、困难的烦恼。实现了可设置用例执行顺序，且不会与pytest-depends插件的依赖排序冲突，这样配合pytest-depends就可以很好的实现测试用例间的依赖设置。修改定制并汉化了html测试报告，使报告显示我们关心的数据，并更加简洁、美观、易读。采用test object设计模式，以及引入链式编程，语义清晰。对selenium、appium、minium（微信小程序自动化测试库）以及WinAppDriver（微软官方提供的一款用于做Window桌面应用程序的界面（UI）自动化测试工具）做了封装集成，更好的支持桌面端web界面、移动端app界面、微信小程序界面以及Window桌面应用程序的界面（UI）的自动化测试。
 >* 详解见：https://blog.csdn.net/hotswwkyo/article/details/103211805
 ## 一、页面封装
 web页面和app页面封装应继承自根基础页面类BasePage。同时封装的页面类需要有两个内部类Elements（元素类）和Actions（动作类），分别用于封装页面的元素和页面动作。这两个内部类Elements（元素类）和Actions（动作类）应分别继承自类BasePage.Elements和BasePage.Actions。页面会自动实例化这两个类，分别赋给页面属性elements和actions。Elements（元素类）和Actions（动作类）这两个类实例都有一个page属性指向当前封装的页面，页面提供的元素查找方法与selenium和appium提供的方法相同。
@@ -752,9 +752,13 @@ class NeteaseCloudMusicApi(object):
 
 ## 五、用例编写
 测试用例业务代码需要放在包sevenautotest下的子包testcases下，编写规则如下：
->* 测试用例类需要继承测试基类（BaseTestCase）
->* 测试方法需要使用标记pytest.mark.testcase进行标记，才会被当作测试用例进行收集，使用位置参数设置用例名，关键字参数author设置用例编        写者和editor设置最后修改者
->* 测试方法需要接收一个参数，参数化时从测试数据文件取出的该方法测试数据作为字典传给该测试方法
+* 测试用例类需要继承测试基类（BaseTestCase）
+* 测试方法需要使用标记pytest.mark.testcase进行标记，才会被当作测试用例进行收集，使用位置参数设置用例名，关键字参数说明如下：
+    >* enable - 控制是否执行该用例，布尔值，如果没有该关键字参数则默认为True
+    >* priority - 设置用例执行优先级，控制用例的执行顺序，整型数值，如果没有该参数则不会调整该用例的执行顺序
+    >* author - 自动化用例代码编写人
+    >* editor - 自动化用例代码修改人
+* 测试方法需要接收一个参数，参数化时框架会自动从测试数据文件取出的该方法测试数据作为字典传给该测试方法
 
 * web页面自动化测试用例示例：
 
@@ -777,7 +781,7 @@ class LoginEmailPageTest(BaseTestCase):
 
         pass
 
-    @pytest.mark.testcase("成功登陆测试", author="siwenwei", editor="")
+    @pytest.mark.testcase("成功登陆测试", priority=1, enable=True, author="siwenwei", editor="")
     def test_successfully_login(self, testdata):
 
         name = testdata.get("用户名")
@@ -820,7 +824,7 @@ class LoginPageTest(BaseTestCase):
 
         pass
 
-    @pytest.mark.testcase("成功登录发行结算app测试", author="siwenwei", editor="")
+    @pytest.mark.testcase("成功登录发行结算app测试", priority=1, enable=True, author="siwenwei", editor="")
     def test_successfully_login(self, testdata):
 
         name = testdata.get("用户名")
@@ -869,7 +873,7 @@ class NeteaseCloudMusicApiTest(BaseTestCase):
 
         pass
 
-    @pytest.mark.testcase("查询歌曲详情测试", author="siwenwei", editor="")
+    @pytest.mark.testcase("查询歌曲详情测试", priority=1, enable=True, author="siwenwei", editor="")
     def test_check_song_detail(self, testdata):
 
         song_id = testdata.get("歌曲id")
@@ -882,7 +886,7 @@ class NeteaseCloudMusicApiTest(BaseTestCase):
         if name != e_name:
             TestAssert.fail("%s != %s" % (name, e_name))
 
-    @pytest.mark.testcase("查询歌手专辑测试", author="siwenwei", editor="")
+    @pytest.mark.testcase("查询歌手专辑测试", priority=2, enable=True, author="siwenwei", editor="")
     def test_get_singer_album(self, testdata):
 
         singer_id = testdata.get("歌手id")
@@ -927,7 +931,7 @@ class YuyanTest(BaseTestCase):
     def setup_method(self):
         pass
 
-    @pytest.mark.testcase('广告投放界面->广告视频显示的正确性 - 影院列表>去上传广告片', author="siwenwei", editor="")
+    @pytest.mark.testcase('广告投放界面->广告视频显示的正确性 - 影院列表>去上传广告片', priority=1, enable=True, author="siwenwei", editor="")
     def test_jump_page_of_click_upload_ad(self, testdata):
 
         fn_name = helper.get_caller_name()
@@ -938,7 +942,7 @@ class YuyanTest(BaseTestCase):
         p = MyAdListPage()
         p.actions.screenshot('{}_我的广告素材_'.format(fn_name)).is_page_self()
 
-    @pytest.mark.testcase('广告投放界面->广告视频显示的正确性 - 影院列表>广告片显示>更换广告片', author="siwenwei", editor="")
+    @pytest.mark.testcase('广告投放界面->广告视频显示的正确性 - 影院列表>广告片显示>更换广告片', priority=2, enable=True, author="siwenwei", editor="")
     def test_change_ad_to_another_in_cinemalist(self, testdata):
 
         oad_name = testdata.get('广告名(原)')
