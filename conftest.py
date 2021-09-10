@@ -39,11 +39,11 @@ def pytest_html_results_table_header(cells):
     change_opts = {
         "Test": {
             "text": "用例方法",
-            "style": "width: 10%;"
+            "style": "width: 7%;"
         },
         "Duration": {
             "text": "耗时(秒)",
-            "style": "width:6%;"
+            "style": "width:9%;"
         },
         "Result": {
             "text": "测试结果",
