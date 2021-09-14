@@ -174,6 +174,10 @@ def pytest_runtest_makereport(item, call):
     report.testcase_exec_start_time = getattr(item, "testcase_exec_start_time", "")
 
 
+def pytest_addoption(parser):
+    parser.addoption("--groups", action="store", help="run testcase which belong group name")
+
+
 def pytest_configure(config):
     # register an additional marker
     config.addinivalue_line("markers", "%s(name): Only used to set test case name to test method" % settings.TESTCASE_MARKER_NAME)
@@ -295,6 +299,27 @@ def sorted_by_priority(testcases):
             testcases[new_index] = thiscase
 
 
+def filter_by_groups(items, config):
+
+    gvalue = config.getoption('groups')
+    groups = gvalue.split() if isinstance(gvalue, str) else []
+    if groups:
+        new_items = []
+        for item in items:
+            markers = list(item.iter_markers(settings.TESTCASE_MARKER_NAME))
+            tc_groups = []
+            for m in markers:
+                mgroups = m.kwargs.get('groups', [])
+                for mg in mgroups:
+                    if mg not in tc_groups:
+                        tc_groups.append(mg)
+            for tcg in tc_groups:
+                if tcg in groups:
+                    new_items.append(item)
+                    break
+        items[:] = new_items
+
+
 @pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(session, config, items):
 
@@ -305,6 +330,7 @@ def pytest_collection_modifyitems(session, config, items):
             new_items.append(item)
     sorted_by_priority(new_items)
     items[:] = new_items
+    filter_by_groups(items, config)
 
 
 @pytest.hookimpl(tryfirst=True)
