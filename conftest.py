@@ -68,9 +68,72 @@ def pytest_html_results_table_header(cells):
 @pytest.mark.optionalhook
 def pytest_html_results_summary(prefix, summary, postfix):
 
-    style_css = 'table tr:hover {background-color: #f0f8ff;}'
+    style_css = 'table tr:hover {background-color: #f0f8ff;};'
+    js = """
+        function append(targentElement, newElement) {
+            var parent = targentElement.parentNode;
+            if (parent.lastChild == targentElement) {
+                parent.appendChild(newElement);
+            } else {
+                parent.insertBefore(newElement, targentElement.nextSibling);
+            }
+        }
+        function prettify_h2(){
+            var h2list = document.getElementsByTagName("h2");
+            var cnmaps = [['Environment', '环境'], ['Summary', '概要'], ['Results', '详情']];
+            var env = cnmaps[0][0];
+            var is_del_env_area = true;
+            var env_indexs = [];
+            for(var i=0;i<h2list.length;i++){
+                var h2 = h2list[i];
+                if(env == h2.innerText){
+                    env_indexs.push(i);
+                    if(!is_del_env_area){
+                        append(h2, document.createElement('hr'));
+                    }
+                }else{
+                    for(var s=0;s<cnmaps.length;s++){
+                        var onemap = cnmaps[s];
+                        if(h2.innerText == onemap[0]){
+                            append(h2, document.createElement('hr'));
+                            break;
+                        }
+                    }
+                }
+                h2.style.marginTop = "50px";
+                for(var j=0;j<cnmaps.length;j++){
+                    var one = cnmaps[j];
+                    if(h2.innerText == one[0]){
+                        h2.innerText = one[1];
+                        break;
+                    }
+                }
+            }
+            if(!is_del_env_area){
+                return;
+            }
+            for(var k=0;k<env_indexs.length;k++){
+                var index = env_indexs[k];
+                var h2 = h2list[index];
+                var el_env = document.getElementById('environment');
+                h2.parentNode.removeChild(h2);
+                if(el_env){
+                    el_env.parentNode.removeChild(el_env);
+                }
+            }
+        }
+        var event_func = document.body.onload;
+        document.body.onload = function(){return false;};
+        if (window.attachEvent) {
+            window.attachEvent("onload", event_func);
+            window.attachEvent("onload", prettify_h2);
+        } else if (window.addEventListener) {
+            window.addEventListener("load", event_func, false);
+            window.addEventListener("load",prettify_h2, false);
+        }
+    """
     prefix.extend([html.style(raw(style_css))])
-    prefix.extend([html.p("日期: {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))])
+    prefix.extend([html.script(raw(js))])
     for item in summary:
         if not item:
             continue
