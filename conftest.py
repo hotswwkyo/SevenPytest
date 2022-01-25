@@ -192,7 +192,7 @@ def pytest_runtest_makereport(item, call):
     # fill testdata
     args = {}
     for argname in item._fixtureinfo.argnames:
-        args[argname] = item.funcargs[argname]
+        args[argname] = item.funcargs.get(argname, {})
     setattr(report, "testdata", json.dumps(args, ensure_ascii=False))
 
     if report.when == "call":  # 测试用例失败自动截图
@@ -223,7 +223,7 @@ def pytest_runtest_makereport(item, call):
             # ss_result, ss_path = capturer.screenshot(file_name)
             img_base64 = capturer.screenshot_as_base64()
             if settings.ATTACH_SCREENSHOT_TO_HTML_REPORT:
-                template = """<div><img src="data:image/png;base64,%s" alt="%s" style="width:600px;height:300px;" onclick="window.open(this.src)" align="right"/></div>"""
+                template = """<div><img src="data:image/png;base64,%s" alt="%s" style="width:600px;height:300px;" onclick="var w = window.open();var img = w.document.createElement('img');img.src = this.src;w.document.body.innerHTML = img.outerHTML;" align="right"/></div>"""
                 # comment by siwenwei at 2021-08-04
                 # html = template % (ScreenshotCapturer.screenshot_file_to_base64(ss_path) if ss_result else """<div>截图失败</div>""", "screenshot of test failure")
                 html = template % (img_base64 if img_base64 else """<div>截图失败</div>""", "screenshot of test failure")
