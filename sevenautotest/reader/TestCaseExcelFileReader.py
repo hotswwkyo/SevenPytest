@@ -2,13 +2,13 @@
 """
 数据文件读取器
 """
-import sys
+# import sys
 import xlrd
 from sevenautotest.utils import helper
 from sevenautotest.utils.marker import ConstAttributeMarker
 from sevenautotest.utils.AttributeManager import AttributeManager
-import io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+# import io
+# sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 __version__ = "1.0"
 __author__ = "si wen wei"

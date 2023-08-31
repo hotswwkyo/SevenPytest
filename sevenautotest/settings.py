@@ -100,8 +100,13 @@ PAGE_ELEMENTS_LOCATORS_ROOT_DIR = os.path.join(PROJECT_DIR, "locators")
 # HTML测试报告文件名
 HTML_REPORT_NAME = "yuyan_autotest_report.html"
 
+# junit xml 测试报告文件名
+XML_REPORT_NAME = "yuyan_autotest_report.xml"
+
 # HTML 测试报告完整路径
 HTML_REPORT_FILE_PATH = os.path.join(REPORT_DIR, HTML_REPORT_NAME)
+
+XML_REPORT_FILE_PATH = os.path.join(REPORT_DIR, XML_REPORT_NAME)
 
 # python __init__.py file name
 PY_INIT_FILE_NAME = "__init__.py"
@@ -120,4 +125,4 @@ TEST_FILE3 = os.path.join(TESTCASES_DIR, 'vncviewer_page_test.py::VNCViewerPageT
 
 TESTCASES = [TEST_FILE3]
 # 执行测试的pytest命令     参数--disable-warnings 禁止显示警告信息
-PYTEST_COMMANDS = ["-s", '--html=%s' % HTML_REPORT_FILE_PATH, '--self-contained-html'] + TESTCASES
+PYTEST_COMMANDS = ["-s", "--capture=sys", '--html=%s' % HTML_REPORT_FILE_PATH, '--self-contained-html'] + TESTCASES

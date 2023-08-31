@@ -4,7 +4,7 @@
 @Author: 思文伟
 @Date: 2021/08/19
 '''
-
+import os
 import subprocess
 
 
@@ -13,18 +13,21 @@ class WinAppDriverHelper(object):
         self.process = None
         self.executable_path = None
 
-    def startup_winappdriver(self, executable_path, output_stream=None, auto_close_output_stream=False):
+    def startup_winappdriver(self, executable_path, output_stream=None, auto_close_output_stream=True):
         """启动WinAppDriver.exe"""
 
         self.executable_path = executable_path
         try:
-            # output_stream = open(os.devnull, 'w')
+            if output_stream is None:
+                output_stream = open(os.devnull, 'w')
             self.process = subprocess.Popen([executable_path], stdout=output_stream)
         except Exception:
             self.process = None
         finally:
             if auto_close_output_stream and output_stream is not None:
-                output_stream.close()
+                close_method = getattr(output_stream, "close", None)
+                if callable(close_method):
+                    close_method()
 
     def shutdown_winappdriver(self):
         """关闭WinAppDriver.exe"""

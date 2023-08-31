@@ -29,8 +29,8 @@ from sevenautotest.utils.ScreenshotCapturer import ScreenshotCapturer
 @pytest.mark.optionalhook
 def pytest_html_results_table_header(cells):
 
-    cells.insert(0, html.th('用例名称', style="width:30%;"))
-    cells.insert(1, html.th('用例数据', style="width:36%;"))
+    cells.insert(0, html.th('用例名称', style="width:30%;min-width:600px;"))
+    cells.insert(1, html.th('用例数据', style="width:36%;max-width:500px;"))
     # cells.insert(2, html.th('执行时间', class_='sortable time', col='time'))
     cells.insert(2, html.th('编写人', style="width:5%;"))
     cells.insert(3, html.th('修改人', style="width:5%;"))
@@ -249,9 +249,12 @@ def pytest_configure(config):
     config.addinivalue_line("python_files", "*.py")
     config.addinivalue_line("filterwarnings", "ignore::UserWarning")
 
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_metadata(metadata: dict):
     opts = ["JAVA_HOME", "Packages", "Platform", "Plugins", "Python"]
     for opt in opts:
-        config._metadata.pop(opt, None)
+        metadata.pop(opt, None)
 
 
 # def pytest_collect_file(path, parent):

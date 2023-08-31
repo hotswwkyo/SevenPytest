@@ -966,6 +966,7 @@ class YuyanTest(BaseTestCase):
 ```
 ## 六、执行测试
 直接运行主目录下的TestRunner.py，也可以在命令行使用pytest命令执行
+> python TestRunner.py  -s -v -cmdmode sevenautotest\testcases\vncviewer_page_test.py
 ## 七、 测试报告
 增加用例中文名称、测试数据、用例编写人等关键信息列，如图：
 >![](https://github.com/hotswwkyo/SevenPytest/blob/master/img/html_report.png)
